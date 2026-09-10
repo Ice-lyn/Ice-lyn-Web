@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冰凌の小栈 | 博客</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+
+    <link rel="stylesheet" href="/lib/all.css">
+    <style>
+        .blog-header {
+            text-align: center;
+            padding: 40px 0 20px;
+        }
+
+        .blog-header h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .blog-header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* 搜索 + 标签区域 */
+        .search-section {
+            margin: 20px 0 30px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--white-card);
+            backdrop-filter: blur(12px);
+            border-radius: 50px;
+            padding: 10px 20px;
+            border: 1px solid rgba(230, 200, 210, 0.5);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 16px;
+        }
+
+        .search-box i {
+            color: var(--text-light);
+            margin-right: 8px;
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            width: 100%;
+            outline: none;
+        }
+
+        /* 标签选择区 */
+        .tag-filter-area {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .tag-filter-area .tag-label {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            white-space: nowrap;
+        }
+
+        .tag-btn {
+            background: var(--white-card);
+            border: 1px solid rgba(230, 200, 210, 0.5);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(8px);
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tag-btn:hover {
+            background: rgba(250, 218, 221, 0.35);
+            color: var(--sakura-deep);
+        }
+
+        /* 选中态 */
+        .tag-btn.selected {
+            background: var(--sakura-pink);
+            color: var(--sakura-deep);
+            border-color: var(--sakura-mid);
+            font-weight: 600;
+            box-shadow: 0 0 0 3px rgba(244, 184, 193, 0.25);
+        }
+
+        .tag-btn .tag-check-icon {
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .tag-btn.selected .tag-check-icon {
+            opacity: 1;
+        }
+
+        /* 清除按钮 */
+        .tag-clear-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 6px 10px;
+            border-radius: 50px;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .tag-clear-btn:hover {
+            color: var(--sakura-deep);
+            background: rgba(250, 218, 221, 0.3);
+        }
+
+        .tag-clear-btn.hidden {
+            display: none;
+        }
+
+        /* 选中计数 */
+        .tag-count-badge {
+            background: var(--sakura-deep);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-weight: 700;
+            animation: popIn 0.25s ease;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+            }
+
+            70% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* 文章列表 */
+        .blog-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-bottom: 40px;
+        }
+
+        .blog-item {
+            background: var(--white-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(240, 215, 225, 0.5);
+            border-radius: var(--radius-lg);
+            padding: 22px 24px;
+            box-shadow: var(--shadow-soft);
+            transition: var(--transition);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .blog-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            background: var(--white-card-hover);
+        }
+
+        .blog-item .post-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .blog-item .post-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .blog-item .post-title a {
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .blog-item .post-title a:hover {
+            color: var(--sakura-deep);
+        }
+
+        .blog-item .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 6px;
+            align-items: center;
+        }
+
+        .blog-item .post-meta .views {
+            margin-left: auto;
+            font-size: 0.78rem;
+        }
+
+        .blog-item .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .blog-item .post-tag {
+            background: var(--lavender);
+            color: #6B5B7B;
+            padding: 2px 10px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .blog-item .post-tag:hover {
+            background: var(--sakura-mid);
+            color: #fff;
+        }
+
+        /* 高亮匹配的标签 */
+        .blog-item .post-tag.matched {
+            background: var(--sakura-pink);
+            color: var(--sakura-deep);
+            font-weight: 700;
+        }
+
+        .blog-item .post-excerpt {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .no-result {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .load-more {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .loading .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--lavender);
+            border-top-color: var(--sakura-deep);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media(max-width:768px) {
+            .blog-item {
+                flex-direction: column;
+            }
+
+            .tag-filter-area {
+                gap: 6px;
+            }
+
+            .tag-btn {
+                padding: 5px 12px;
+                font-size: 0.78rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-decoration bg-circle-1"></div>
+    <div class="bg-decoration bg-circle-2"></div>
+    <div class="bg-decoration bg-circle-3"></div>
+    <div class="sakura-container" id="sakuraContainer"></div>
+
+    <nav class="navbar" data-aos="fade-down">
+        <div class="navbar-inner">
+            <a href="/" class="nav-brand"><span class="brand-icon">❄️</span>冰凌呀 · 小栈</a>
+            <button class="hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/"><i class="fas fa-home"></i>首页</a></li>
+                <li><a href="#" class="active"><i class="fas fa-feather-alt"></i>博客</a></li>
+                <li><a href="/tools/"><i class="fas fa-wand-magic-sparkles"></i>工具</a></li>
+                <li><a href="https://github.com/Ice-rink" target="_blank"><i class="fab fa-github"></i>GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="blog-header" data-aos="fade-up">
+            <h1>📝 博客</h1>
+            <p>技术笔记 · 生活随想 · 温柔记录</p>
+        </div>
+
+        <div class="search-section" data-aos="fade-up">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="搜索文章标题...">
+            </div>
+            <div class="tag-filter-area" id="tagFilterArea">
+                <span class="tag-label"><i class="fas fa-tags"></i> 筛选：</span>
+                <!-- 标签按钮动态生成 -->
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>正在加载文章列表...</p>
+        </div>
+
+        <div class="blog-list" id="blogList" style="display:none;"></div>
+        <div class="load-more" id="loadMoreWrap" style="display:none;">
+            <button class="btn btn-primary" id="loadMoreBtn"><i class="fas fa-sparkles"></i>加载更多</button>
+        </div>
+    </main>
+
+    <footer class="footer" data-aos="fade-up" data-aos-duration="700">
+        <p style="margin-top:4px;font-size:0.78rem;">© 2026 Ice_rink · 保持好奇，保持温柔</p>
+        <p>Made with <span class="footer-heart">💗</span> by <a href="https://github.com/Ice-rink" target="_blank"
+                rel="noopener">Ice_rink</a> · 冰凌呀 & <a href="https://deepseek.com/" target="_blank"
+                rel="noopener">DeepSeek</a> v4 Pro</p>
+    </footer>
+    
+    <button class="back-to-top" id="backToTop" title="回到顶部"><i class="fas fa-arrow-up"></i></button>
+
+    <script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
+    <script src="/lib/all.js"></script>
+    <script>
+        (function () {
+            AOS.init({ duration: 700, once: true });
+
+            // ========== 加载所有文章 ==========
+            let allPosts = [];
+            let selectedTags = new Set();
+            let searchTerm = '';
+            let visibleCount = 8;
+
+            async function loadAllPosts() {
+                const loadingEl = document.getElementById('loading');
+                const blogListEl = document.getElementById('blogList');
+
+                try {
+                    const response = await fetch('/blog/postList.json');
+                    if (!response.ok) throw new Error('加载失败');
+
+                    allPosts = await response.json();
+
+                    // 按日期降序排序
+                    allPosts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+                    loadingEl.style.display = 'none';
+                    blogListEl.style.display = 'flex';
+
+                    // 初始化页面
+                    buildTagButtons();
+                    renderPosts();
+
+                    // 绑定搜索
+                    document.getElementById('searchInput').addEventListener('input', e => {
+                        searchTerm = e.target.value;
+                        visibleCount = 8;
+                        renderPosts();
+                    });
+
+                    // 加载更多
+                    document.getElementById('loadMoreBtn').addEventListener('click', () => {
+                        visibleCount += 8;
+                        renderPosts();
+                    });
+
+                    return allPosts;
+                } catch (error) {
+                    loadingEl.innerHTML = '<p>📭 文章列表加载失败，请刷新重试</p>';
+                    return [];
+                }
+            }
+            loadAllPosts();
+
+            // ========== 核心：多选标签筛选逻辑 ==========
+            // 统计所有标签
+            function getAllTags() {
+                const tagCounts = {};
+                allPosts.forEach(p => {
+                    const tags = Array.isArray(p.tags) ? p.tags : (typeof p.tags === 'string' ? [p.tags] : []);
+                    tags.forEach(tag => {
+                        if (!tagCounts[tag]) tagCounts[tag] = 0;
+                        tagCounts[tag]++;
+                    });
+                });
+                return Object.entries(tagCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(t => t[0]);
+            }
+
+            // 构建标签按钮
+            function buildTagButtons() {
+                const allTags = getAllTags();
+                const area = document.getElementById('tagFilterArea');
+
+                let html = '<span class="tag-label"></span>';
+
+                // 每个标签一个按钮
+                allTags.forEach(tag => {
+                    const isSelected = selectedTags.has(tag);
+                    html += `
+                        <button class="tag-btn${isSelected ? ' selected' : ''}" data-tag="${tag}">
+                            ${tag}
+                        </button>
+                    `;
+                });
+
+                // 清除按钮 + 计数
+                const hasSelection = selectedTags.size > 0;
+                html += `
+                    <button class="tag-clear-btn${hasSelection ? '' : ' hidden'}" id="tagClearBtn">
+                        <i class="fas fa-times-circle"></i> 清除筛选
+                    </button>
+                `;
+                if (hasSelection) {
+                    html += `<span class="tag-count-badge" id="tagCountBadge">${selectedTags.size}</span>`;
+                }
+
+                area.innerHTML = html;
+
+                // 绑定标签点击事件
+                area.querySelectorAll('.tag-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const tag = btn.dataset.tag;
+                        if (selectedTags.has(tag)) {
+                            selectedTags.delete(tag);
+                        } else {
+                            selectedTags.add(tag);
+                        }
+                        visibleCount = 8;
+                        buildTagButtons();  // 重建按钮状态
+                        renderPosts();
+                    });
+                });
+
+                // 绑定清除按钮
+                const clearBtn = document.getElementById('tagClearBtn');
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', () => {
+                        selectedTags.clear();
+                        visibleCount = 8;
+                        buildTagButtons();
+                        renderPosts();
+                    });
+                }
+            }
+
+            // 筛选逻辑：文章拥有任一选中标签即显示（没选标签时显示全部）
+            function filterPosts() {
+                return allPosts.filter(p => {
+                    const tags = Array.isArray(p.tags) ? p.tags : (typeof p.tags === 'string' ? [p.tags] : []);
+
+                    // 多选标签：任一匹配即可
+                    if (selectedTags.size > 0) {
+                        const hasMatch = tags.some(t => selectedTags.has(t));
+                        if (!hasMatch) return false;
+                    }
+
+                    // 搜索词
+                    if (searchTerm && !(p.title || '').toLowerCase().includes(searchTerm.toLowerCase())) {
+                        return false;
+                    }
+
+                    return true;
+                });
+            }
+
+            // 渲染文章列表
+            function renderPosts() {
+                const filtered = filterPosts();
+                const show = filtered.slice(0, visibleCount);
+                const container = document.getElementById('blogList');
+                const loadWrap = document.getElementById('loadMoreWrap');
+
+                if (show.length === 0) {
+                    container.innerHTML = '<div class="no-result">✨ 没有找到匹配的文章，试试调整筛选条件吧~</div>';
+                    loadWrap.style.display = 'none';
+                    return;
+                }
+
+                container.innerHTML = show.map((post, i) => {
+                    const tags = Array.isArray(post.tags) ? post.tags : (typeof post.tags === 'string' ? [post.tags] : []);
+                    return `
+                        <div class="blog-item" data-aos="fade-up" data-aos-delay="${i * 50}" data-post-id="${post.id}">
+                            <div class="post-main">
+                                <div class="post-title">
+                                    <a href="/blog/post.html?id=${post.id}">${post.title || '无标题'}</a>
+                                </div>
+                                <div class="post-meta">
+                                    <span><i class="far fa-calendar-alt"></i> ${post.date || '未标注日期'}</span>
+                                    <span class="views">
+                                        <i class="far fa-eye"></i>
+                                        <span class="view-count" data-id="${post.id}">加载中...</span>
+                                    </span>
+                                </div>
+                                <div class="post-tags">
+                                    ${tags.map(t => {
+                                    const isMatched = selectedTags.size > 0 && selectedTags.has(t);
+                                    return `<span class="post-tag${isMatched ? ' matched' : ''}" data-tag="${t}">${t}</span>`;
+                                }).join('')}
+                                </div>
+                                <div class="post-excerpt">${post.excerpt || '(暂无摘要)'}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // 标签点击事件
+                container.querySelectorAll('.post-tag').forEach(tagEl => {
+                    tagEl.addEventListener('click', e => {
+                        e.stopPropagation();
+                        const tag = e.target.dataset.tag;
+                        if (selectedTags.has(tag)) {
+                            selectedTags.delete(tag);
+                        } else {
+                            selectedTags.add(tag);
+                        }
+                        visibleCount = 8;
+                        buildTagButtons();
+                        renderPosts();
+                    });
+                });
+
+                loadWrap.style.display = visibleCount >= filtered.length ? 'none' : 'block';
+                AOS.refresh();
+
+                // ✅ 关键：调用浏览量加载
+                const postIds = show.map(post => post.id);
+                loadViewsForPosts(postIds);
+            }
+
+            // 批量加载浏览量
+            async function loadViewsForPosts(postIds) {
+                if (!postIds || postIds.length === 0) return;
+
+                try {
+                    const promises = postIds.map(id =>
+                        fetch(`/api/visit?mode=query&key=blog_${id}`)
+                            .then(res => res.json())
+                            .catch(() => ({ key: `blog_${id}`, value: 0 }))
+                    );
+
+                    const results = await Promise.all(promises);
+
+                    results.forEach(result => {
+                        const id = result.key.replace('blog_', '');
+                        const viewSpan = document.querySelector(`.view-count[data-id="${id}"]`);
+                        if (viewSpan) {
+                            viewSpan.innerText = result.value;
+                        }
+                    });
+                } catch (error) {
+                    console.error('加载浏览量失败:', error);
+                    // 可选：显示占位符
+                    postIds.forEach(id => {
+                        const viewSpan = document.querySelector(`.view-count[data-id="${id}"]`);
+                        if (viewSpan && viewSpan.innerText === '加载中...') {
+                            viewSpan.innerText = '?';
+                        }
+                    });
+                }
+            }
+
+        })();
+    </script>
+</body>
+
+</html>

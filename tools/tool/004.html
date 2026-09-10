@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冰凌の小栈 | FCL 崩溃日志分析</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <!-- Markdown 渲染和代码高亮 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <link rel="stylesheet" href="/lib/all.css">
+
+    <style>
+        /* ----- 工具专属样式 ----- */
+        .template-header {
+            text-align: center;
+            padding: 40px 0 20px;
+        }
+
+        .template-header h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .template-header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .back-bar {
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(230, 200, 210, 0.5);
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .back-btn:hover {
+            color: var(--sakura-deep);
+            background: var(--white-card-hover);
+            transform: translateX(-3px);
+            box-shadow: var(--shadow-card);
+        }
+
+        .content-card {
+            background: var(--white-card);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(240, 215, 225, 0.5);
+            border-radius: var(--radius-lg);
+            padding: 36px 32px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition);
+            margin-bottom: 40px;
+        }
+
+        .content-card:hover {
+            box-shadow: var(--shadow-hover);
+            background: var(--white-card-hover);
+        }
+
+        /* ---- 配置面板 ---- */
+        .config-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 30px;
+            transition: var(--transition);
+        }
+
+        .config-toggle:hover {
+            background: rgba(250, 218, 221, 0.3);
+            color: var(--sakura-deep);
+        }
+
+        .config-panel {
+            display: none;
+            margin-top: 16px;
+            padding: 20px;
+            background: rgba(255, 248, 250, 0.6);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(220, 190, 200, 0.3);
+        }
+
+        .config-panel.open {
+            display: block;
+        }
+
+        .config-panel .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .config-panel .form-group {
+            margin-bottom: 12px;
+        }
+
+        .config-panel label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .config-panel input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid rgba(220, 190, 200, 0.5);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.6);
+            transition: var(--transition);
+            color: var(--text-primary);
+            box-sizing: border-box;
+        }
+
+        .config-panel input:focus {
+            outline: none;
+            border-color: var(--sakura-mid);
+            box-shadow: 0 0 0 3px rgba(244, 184, 193, 0.2);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .config-status {
+            font-size: 0.8rem;
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .config-status.success {
+            background: rgba(200, 230, 210, 0.4);
+            color: #2e7d52;
+        }
+
+        .config-status.error {
+            background: rgba(255, 210, 210, 0.4);
+            color: #a04040;
+        }
+
+        /* ---- 上传与描述（初始可见） ---- */
+        .input-section {
+            transition: all 0.4s ease;
+            overflow: hidden;
+            max-height: 600px;
+            opacity: 1;
+            margin-bottom: 20px;
+        }
+
+        .input-section.hidden {
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0;
+            padding: 0;
+            pointer-events: none;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(210, 180, 195, 0.6);
+            border-radius: var(--radius-md);
+            padding: 30px 20px;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            background: rgba(255, 248, 250, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--sakura-mid);
+            background: rgba(255, 240, 245, 0.3);
+        }
+
+        .upload-area .icon {
+            font-size: 2.5rem;
+            color: var(--sakura-deep);
+            opacity: 0.6;
+            margin-bottom: 8px;
+        }
+
+        .upload-area p {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .upload-area .file-name {
+            font-weight: 600;
+            color: var(--sakura-deep);
+            margin-top: 4px;
+        }
+
+        .upload-area .file-size {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .upload-area .file-error {
+            color: #d4566a;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .desc-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid rgba(220, 190, 200, 0.5);
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            font-family: 'Noto Sans SC', 'Quicksand', sans-serif;
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.6);
+            resize: vertical;
+            transition: var(--transition);
+            min-height: 60px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .desc-input:focus {
+            outline: none;
+            border-color: var(--sakura-mid);
+            box-shadow: 0 0 0 3px rgba(244, 184, 193, 0.12);
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .btn-analyze {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Noto Sans SC', 'Quicksand', sans-serif;
+            color: #fff;
+            background: linear-gradient(135deg, #e8a0b4, #d4788f);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 6px 20px rgba(210, 120, 145, 0.3);
+        }
+
+        .btn-analyze:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e590a8, #c85e78);
+            box-shadow: 0 8px 28px rgba(200, 100, 130, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-analyze:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(15%);
+        }
+
+        .btn-analyze .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255, 255, 255, 0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .btn-analyze.loading .spinner {
+            display: inline-block;
+        }
+
+        .btn-analyze.loading .btn-icon {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn-reset {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 22px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            font-family: inherit;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.5);
+            border: 1.5px solid rgba(210, 190, 200, 0.45);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(6px);
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 240, 245, 0.7);
+            border-color: var(--sakura-mid);
+            color: #c45a70;
+        }
+
+        /* ---- 对话区域 ---- */
+        .chat-container {
+            margin-top: 20px;
+            display: none;
+            flex-direction: column;
+        }
+
+        .chat-container.active {
+            display: flex;
+        }
+
+        /* 对话头部 - 费用按钮 */
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(220, 190, 200, 0.2);
+        }
+
+        .chat-header .left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cost-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 14px;
+            border-radius: 30px;
+            transition: var(--transition);
+        }
+
+        .cost-toggle:hover {
+            background: rgba(250, 218, 221, 0.3);
+            color: var(--sakura-deep);
+        }
+
+        .cost-toggle .total-cost {
+            font-weight: 600;
+            color: var(--sakura-deep);
+        }
+
+        .cost-panel {
+            display: none;
+            margin-top: 6px;
+            padding: 12px 16px;
+            background: rgba(255, 248, 250, 0.6);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(220, 190, 200, 0.3);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            max-width: 300px;
+        }
+
+        .cost-panel.open {
+            display: block;
+        }
+
+        .cost-panel .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+        }
+
+        .cost-panel .row .label {
+            color: var(--text-light);
+        }
+
+        .cost-panel .row .value {
+            font-weight: 500;
+        }
+
+        .chat-messages {
+            flex: 1;
+            max-height: 560px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 12px 4px 20px 4px;
+            margin-bottom: 16px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            max-width: 92%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .chat-message.assistant {
+            align-self: flex-start;
+        }
+
+        .chat-message .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #fff;
+            background: var(--sakura-deep);
+        }
+
+        .chat-message.user .avatar {
+            background: var(--sakura-pink);
+            color: var(--sakura-deep);
+        }
+
+        .chat-message.assistant .avatar {
+            background: var(--sky-blue);
+            color: #4a7a8a;
+        }
+
+        .chat-message .bubble {
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            word-break: break-word;
+            white-space: pre-wrap;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(220, 190, 200, 0.25);
+            color: var(--text-primary);
+            min-width: 40px;
+            max-width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .chat-message.user .bubble {
+            background: var(--sakura-pink);
+            border-color: var(--sakura-mid);
+            color: var(--sakura-deep);
+        }
+
+        .chat-message.assistant .bubble {
+            background: rgba(248, 248, 255, 0.8);
+            border-color: rgba(200, 200, 220, 0.25);
+        }
+
+        .chat-message .bubble .thinking {
+            color: #aaa;
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        /* Markdown 样式 */
+        .chat-message .bubble h1,
+        .chat-message .bubble h2,
+        .chat-message .bubble h3 {
+            margin: 0.6em 0 0.3em;
+            font-weight: 600;
+        }
+
+        .chat-message .bubble h1 {
+            font-size: 1.2rem;
+        }
+
+        .chat-message .bubble h2 {
+            font-size: 1.1rem;
+        }
+
+        .chat-message .bubble h3 {
+            font-size: 1rem;
+        }
+
+        .chat-message .bubble p {
+            margin: 0.4em 0;
+        }
+
+        .chat-message .bubble ul,
+        .chat-message .bubble ol {
+            padding-left: 1.5em;
+            margin: 0.4em 0;
+        }
+
+        .chat-message .bubble li {
+            margin-bottom: 0.2em;
+        }
+
+        .chat-message .bubble code {
+            background: rgba(230, 220, 240, 0.4);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-family: 'Fira Code', 'Consolas', monospace;
+        }
+
+        .chat-message .bubble pre {
+            background: #f6f8fa;
+            border-radius: 10px;
+            padding: 12px 16px;
+            overflow-x: auto;
+            margin: 0.6em 0;
+            border: 1px solid rgba(200, 200, 210, 0.2);
+        }
+
+        .chat-message .bubble pre code {
+            background: none;
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .chat-message .bubble blockquote {
+            border-left: 4px solid var(--sakura-mid);
+            padding-left: 12px;
+            margin: 0.6em 0;
+            color: var(--text-secondary);
+            background: rgba(250, 240, 245, 0.3);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .chat-message .bubble table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0.6em 0;
+        }
+
+        .chat-message .bubble th,
+        .chat-message .bubble td {
+            border: 1px solid rgba(200, 190, 200, 0.3);
+            padding: 6px 10px;
+            text-align: left;
+        }
+
+        .chat-message .bubble th {
+            background: rgba(240, 230, 245, 0.4);
+        }
+
+        .chat-message .bubble a {
+            color: var(--sakura-deep);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--sakura-mid);
+        }
+
+        .chat-message .bubble img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            border-top: 1px solid rgba(220, 190, 200, 0.2);
+            padding-top: 16px;
+            margin-top: 4px;
+        }
+
+        .chat-input-area textarea {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1.5px solid rgba(220, 190, 200, 0.5);
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-family: 'Noto Sans SC', 'Quicksand', sans-serif;
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.6);
+            resize: vertical;
+            min-height: 50px;
+            transition: var(--transition);
+            box-sizing: border-box;
+        }
+
+        .chat-input-area textarea:focus {
+            outline: none;
+            border-color: var(--sakura-mid);
+            box-shadow: 0 0 0 3px rgba(244, 184, 193, 0.12);
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .chat-input-area .btn-send {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #e8a0b4, #d4788f);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-input-area .btn-send:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e590a8, #c85e78);
+            transform: translateY(-2px);
+        }
+
+        .chat-input-area .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chat-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .chat-footer .reset-small {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            transition: var(--transition);
+        }
+
+        .chat-footer .reset-small:hover {
+            background: rgba(250, 218, 221, 0.3);
+            color: var(--sakura-deep);
+        }
+
+        /* ---- Toast ---- */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            background: var(--white-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(230, 200, 210, 0.5);
+            border-radius: var(--radius-md);
+            padding: 14px 24px;
+            box-shadow: var(--shadow-hover);
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .toast.show {
+            display: flex;
+        }
+
+        .toast .icon {
+            font-size: 1.2rem;
+        }
+
+        .toast.error .icon {
+            color: #d4566a;
+        }
+
+        .toast.success .icon {
+            color: #4caf84;
+        }
+
+        .toast.info .icon {
+            color: var(--sakura-deep);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .content-card {
+                padding: 24px 18px;
+            }
+
+            .config-panel .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-message {
+                max-width: 100%;
+            }
+
+            .chat-message .bubble {
+                font-size: 0.85rem;
+            }
+
+            .cost-panel {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 背景装饰 -->
+    <div class="bg-decoration bg-circle-1"></div>
+    <div class="bg-decoration bg-circle-2"></div>
+    <div class="bg-decoration bg-circle-3"></div>
+    <div class="sakura-container" id="sakuraContainer"></div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"><span class="icon"></span><span class="msg"></span></div>
+
+    <main class="container">
+        <!-- 返回 -->
+        <div class="back-bar" data-aos="fade-up">
+            <a href="/tools/" class="back-btn"><i class="fas fa-arrow-left"></i> 返回工具列表</a>
+        </div>
+
+        <!-- 头部 -->
+        <div class="template-header" data-aos="fade-up">
+            <h1>📋 FCL 崩溃日志分析</h1>
+            <p>上传 .log 文件，AI 帮你快速定位崩溃原因</p>
+        </div>
+
+        <!-- 主卡片 -->
+        <div class="content-card" data-aos="fade-up" data-aos-duration="600">
+
+            <!-- 配置区域 -->
+            <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+                <button class="config-toggle" id="configToggle">
+                    <i class="fas fa-cog"></i> LLM 配置
+                </button>
+            </div>
+            <div class="config-panel" id="configPanel">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>API 地址 (Base URL)</label>
+                        <input type="url" id="apiBase" placeholder="https://api.openai.com/v1"
+                            value="https://api.openai.com/v1">
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" id="apiKey" placeholder="sk-...">
+                    </div>
+                    <div class="form-group">
+                        <label>模型名称</label>
+                        <input type="text" id="modelName" placeholder="gpt-4o-mini" value="gpt-4o-mini">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:flex-end;">
+                        <button class="btn btn-primary" id="saveConfigBtn" style="width:100%;">保存配置</button>
+                    </div>
+                </div>
+                <div class="config-status" id="configStatus"></div>
+            </div>
+
+            <!-- 输入区域：文件上传 + 描述 + 操作按钮（初始可见） -->
+            <div class="input-section" id="inputSection">
+                <div class="upload-area" id="uploadArea">
+                    <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <p>点击或拖拽上传 <strong>.log</strong> 文件（最大 1MB）</p>
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-size" id="fileSize"></div>
+                    <div class="file-error" id="fileError"></div>
+                    <input type="file" id="fileInput" accept=".log" style="display:none;">
+                </div>
+
+                <textarea class="desc-input" id="descInput" placeholder="可选：描述崩溃发生的场景、操作步骤等（帮助 AI 更精准分析）"></textarea>
+
+                <div class="action-row">
+                    <button class="btn-analyze" id="analyzeBtn">
+                        <span class="btn-icon">🔍</span>
+                        <span class="spinner"></span>
+                        <span class="btn-text">开始分析</span>
+                    </button>
+                    <button class="btn-reset" id="resetBtn"><i class="fas fa-undo-alt"></i> 重置会话</button>
+                </div>
+            </div>
+
+            <!-- 对话区域（初始隐藏） -->
+            <div class="chat-container" id="chatContainer">
+                <!-- 对话头部：费用按钮 -->
+                <div class="chat-header">
+                    <div class="left">
+                        <button class="cost-toggle" id="costToggle" style="display:none;">
+                            <i class="fas fa-coins"></i> 消耗 <span class="total-cost" id="totalCostDisplay">0.0000</span>
+                            元
+                        </button>
+                        <div class="cost-panel" id="costPanel">
+                            <div class="row"><span class="label">输入 Tokens</span><span class="value"
+                                    id="inputTokens">0</span></div>
+                            <div class="row"><span class="label">输出 Tokens</span><span class="value"
+                                    id="outputTokens">0</span></div>
+                            <div class="row" id="cacheRow" style="display:none;">
+                                <span class="label">缓存命中 (输入)</span>
+                                <span class="value" id="cacheHitTokens">0</span>
+                            </div>
+                            <div class="row"><span class="label">总 Tokens</span><span class="value"
+                                    id="totalTokens">0</span></div>
+                            <div class="row"><span class="label">本次消耗</span><span class="value" id="detailCost">0.0000
+                                    元</span></div>
+                        </div>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-light);">
+                        <span id="turnCounter">剩余对话次数：40</span>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-area">
+                    <textarea id="chatInput" placeholder="继续提问..." rows="2"></textarea>
+                    <button class="btn-send" id="sendBtn"><i class="fas fa-paper-plane"></i> 发送</button>
+                </div>
+                <div class="chat-footer">
+                    <span></span>
+                    <button class="reset-small" id="resetSmallBtn"><i class="fas fa-undo-alt"></i> 重置会话</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer" data-aos="fade-up" data-aos-duration="700">
+        <p style="margin-top:4px;font-size:0.78rem;">© 2026 Ice_rink · 保持好奇，保持温柔</p>
+        <p>Made with <span class="footer-heart">💗</span> by <a href="https://github.com/Ice-rink" target="_blank"
+                rel="noopener">Ice_rink</a> · 冰凌呀 & <a href="https://deepseek.com/" target="_blank"
+                rel="noopener">DeepSeek</a> v4 Pro</p>
+    </footer>
+
+    <button class="back-to-top" id="backToTop" title="回到顶部"><i class="fas fa-arrow-up"></i></button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="/lib/all.js"></script>
+
+    <script>
+        (function () {
+            AOS.init({ duration: 700, once: true });
+
+            // ---- DOM 元素 ----
+            const toast = document.getElementById('toast');
+            const configToggle = document.getElementById('configToggle');
+            const configPanel = document.getElementById('configPanel');
+            const apiBase = document.getElementById('apiBase');
+            const apiKey = document.getElementById('apiKey');
+            const modelName = document.getElementById('modelName');
+            const saveConfigBtn = document.getElementById('saveConfigBtn');
+            const configStatus = document.getElementById('configStatus');
+
+            const inputSection = document.getElementById('inputSection');
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const fileError = document.getElementById('fileError');
+            const descInput = document.getElementById('descInput');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const resetBtn = document.getElementById('resetBtn');
+
+            const chatContainer = document.getElementById('chatContainer');
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const turnCounter = document.getElementById('turnCounter');
+            const resetSmallBtn = document.getElementById('resetSmallBtn');
+
+            // 费用相关元素
+            const costToggle = document.getElementById('costToggle');
+            const totalCostDisplay = document.getElementById('totalCostDisplay');
+            const costPanel = document.getElementById('costPanel');
+            const inputTokensEl = document.getElementById('inputTokens');
+            const outputTokensEl = document.getElementById('outputTokens');
+            const cacheRow = document.getElementById('cacheRow');
+            const cacheHitTokens = document.getElementById('cacheHitTokens');
+            const totalTokensEl = document.getElementById('totalTokens');
+            const detailCost = document.getElementById('detailCost');
+
+            // ---- 状态 ----
+            let fileContent = null;
+            let isFileValid = false;
+
+            let messages = [];
+            let turnCount = 0;
+            const MAX_TURNS = 40;
+
+            let isAnalyzing = false;
+            let abortController = null;
+
+            // 计费累计
+            let totalInputTokens = 0;
+            let totalOutputTokens = 0;
+            let totalCacheHit = 0;
+            let totalCostAccum = 0;
+
+            const PRICE_INPUT = 3;
+            const PRICE_OUTPUT = 6;
+            const PRICE_CACHE_HIT = 1;
+
+            // ---- Toast ----
+            function showToast(msg, type = 'info', duration = 3000) {
+                toast.className = 'toast show ' + type;
+                toast.querySelector('.icon').textContent = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+                toast.querySelector('.msg').textContent = msg;
+                clearTimeout(toast._timer);
+                toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+            }
+
+            // ---- 配置管理 ----
+            function loadConfig() {
+                const saved = localStorage.getItem('fcl_llm_config');
+                if (saved) {
+                    try {
+                        const cfg = JSON.parse(saved);
+                        apiBase.value = cfg.base || 'https://api.openai.com/v1';
+                        apiKey.value = cfg.key || '';
+                        modelName.value = cfg.model || 'gpt-4o-mini';
+                    } catch (e) { }
+                }
+                updateConfigStatus();
+            }
+
+            function saveConfig() {
+                const cfg = {
+                    base: apiBase.value.trim(),
+                    key: apiKey.value.trim(),
+                    model: modelName.value.trim()
+                };
+                localStorage.setItem('fcl_llm_config', JSON.stringify(cfg));
+                updateConfigStatus();
+                showToast('配置已保存', 'success');
+            }
+
+            function getConfig() {
+                return {
+                    base: apiBase.value.trim(),
+                    key: apiKey.value.trim(),
+                    model: modelName.value.trim()
+                };
+            }
+
+            function isConfigValid() {
+                const cfg = getConfig();
+                return cfg.base && cfg.key && cfg.model;
+            }
+
+            function updateConfigStatus() {
+                const valid = isConfigValid();
+                configStatus.className = 'config-status ' + (valid ? 'success' : 'error');
+                configStatus.textContent = valid ? '✅ 配置有效' : '⚠️ 请填写完整的 API 地址、Key 和模型名称';
+            }
+
+            configToggle.addEventListener('click', () => {
+                configPanel.classList.toggle('open');
+            });
+            saveConfigBtn.addEventListener('click', saveConfig);
+            [apiBase, apiKey, modelName].forEach(el => el.addEventListener('input', updateConfigStatus));
+
+            // ---- 文件上传 ----
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.style.borderColor = 'var(--sakura-mid)'; });
+            uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '';
+                const files = e.dataTransfer.files;
+                if (files.length) handleFile(files[0]);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) handleFile(e.target.files[0]);
+                fileInput.value = '';
+            });
+
+            function handleFile(file) {
+                fileError.textContent = '';
+                fileName.textContent = '';
+                fileSize.textContent = '';
+                isFileValid = false;
+                fileContent = null;
+
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (ext !== 'log') {
+                    fileError.textContent = '⚠️ 只支持 .log 文件';
+                    showToast('请上传 .log 格式的日志文件', 'error');
+                    return;
+                }
+
+                const maxSize = 1 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    fileError.textContent = `⚠️ 文件过大 (${(file.size / 1024 / 1024).toFixed(2)} MB)，请压缩至 1MB 以内`;
+                    showToast('文件超过 1MB 限制，请压缩后重试', 'error');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        fileContent = ev.target.result;
+                        fileName.textContent = '📄 ' + file.name;
+                        fileSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
+                        isFileValid = true;
+                        fileError.textContent = '';
+                        showToast('文件上传成功', 'success');
+                        updateAnalyzeBtn();
+                    } catch (err) {
+                        fileError.textContent = '⚠️ 读取文件失败';
+                        showToast('读取文件失败: ' + err.message, 'error');
+                    }
+                };
+                reader.onerror = () => {
+                    fileError.textContent = '⚠️ 读取文件失败';
+                    showToast('读取文件失败', 'error');
+                };
+                reader.readAsText(file);
+            }
+
+            // ---- 按钮状态 ----
+            function updateAnalyzeBtn() {
+                const valid = isFileValid && isConfigValid();
+                analyzeBtn.disabled = !valid;
+            }
+            descInput.addEventListener('input', updateAnalyzeBtn);
+            document.addEventListener('configChanged', updateAnalyzeBtn);
+
+            // ---- 重置会话 ----
+            function resetSession() {
+                if (abortController) {
+                    abortController.abort();
+                    abortController = null;
+                }
+                isAnalyzing = false;
+                analyzeBtn.classList.remove('loading');
+                analyzeBtn.disabled = false;
+                messages = [];
+                turnCount = 0;
+                totalInputTokens = 0;
+                totalOutputTokens = 0;
+                totalCacheHit = 0;
+                totalCostAccum = 0;
+                updateBillingUI();
+                chatContainer.classList.remove('active');
+                chatMessages.innerHTML = '';
+                chatInput.value = '';
+                turnCounter.textContent = `剩余对话次数：${MAX_TURNS}`;
+                costToggle.style.display = 'none';
+                costPanel.classList.remove('open');
+                inputSection.classList.remove('hidden');
+                showToast('会话已重置', 'info');
+                updateAnalyzeBtn();
+            }
+
+            resetBtn.addEventListener('click', resetSession);
+            resetSmallBtn.addEventListener('click', resetSession);
+
+            // ---- 发送消息 ----
+            async function sendMessage(userMessage, isFirst = false) {
+                if (isAnalyzing) return;
+                if (turnCount >= MAX_TURNS) {
+                    showToast('已达到最大对话轮数 (40)', 'error');
+                    return;
+                }
+
+                if (!isConfigValid()) {
+                    showToast('请先配置 LLM 参数', 'error');
+                    configPanel.classList.add('open');
+                    return;
+                }
+
+                if (isFirst) {
+                    if (!isFileValid || !fileContent) {
+                        showToast('请先上传有效的 .log 文件', 'error');
+                        return;
+                    }
+                    const systemPrompt = `你是一位专业的 FCL (Fabric Loader) 崩溃分析专家。用户会提供一份崩溃日志（.log）和可能的情景描述。请仔细阅读日志，分析崩溃原因，给出可能的解决方案或修复建议。回答要清晰、有条理，并尽量用中文。`;
+                    let userContent = `以下是崩溃日志内容：\n\`\`\`\n${fileContent}\n\`\`\``;
+                    if (descInput.value.trim()) {
+                        userContent += `\n\n补充说明：${descInput.value.trim()}`;
+                    }
+                    messages = [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userContent }
+                    ];
+                } else {
+                    if (!userMessage.trim()) return;
+                    messages.push({ role: 'user', content: userMessage.trim() });
+                }
+
+                // 隐藏输入区域（首次）
+                if (isFirst) {
+                    inputSection.classList.add('hidden');
+                }
+
+                // 显示聊天区域
+                chatContainer.classList.add('active');
+                // 显示费用按钮
+                costToggle.style.display = 'inline-flex';
+
+                // 添加用户消息
+                if (!isFirst) {
+                    appendMessage('user', userMessage.trim());
+                } else {
+                    appendMessage('user', '📄 已上传日志文件' + (descInput.value.trim() ? '，并附有描述' : ''));
+                }
+
+                // 助手消息占位（显示“思考中”）
+                const assistantMsg = appendMessage('assistant', '', true);
+                const bubble = assistantMsg.querySelector('.bubble');
+                bubble.innerHTML = '<span class="thinking">思考中…</span>';
+
+                setInputEnabled(false);
+                isAnalyzing = true;
+                analyzeBtn.classList.add('loading');
+                analyzeBtn.disabled = true;
+
+                abortController = new AbortController();
+
+                try {
+                    const cfg = getConfig();
+                    const url = cfg.base.replace(/\/+$/, '') + '/chat/completions';
+
+                    const payload = {
+                        model: cfg.model,
+                        messages: messages,
+                        stream: true,
+                        temperature: 0.7,
+                        stream_options: { include_usage: true }
+                    };
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${cfg.key}`
+                        },
+                        body: JSON.stringify(payload),
+                        signal: abortController.signal
+                    });
+
+                    if (!response.ok) {
+                        const errText = await response.text();
+                        throw new Error(`API 请求失败 (${response.status}): ${errText}`);
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+                    let assistantContent = '';
+                    let usage = null;
+                    let firstToken = true;
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.slice(6).trim();
+                                if (data === '[DONE]') continue;
+                                try {
+                                    const json = JSON.parse(data);
+                                    if (json.usage) {
+                                        usage = json.usage;
+                                        continue;
+                                    }
+                                    if (json.choices && json.choices[0].delta && json.choices[0].delta.content) {
+                                        const delta = json.choices[0].delta.content;
+                                        if (firstToken) {
+                                            // 清除“思考中”占位
+                                            bubble.innerHTML = '';
+                                            firstToken = false;
+                                        }
+                                        assistantContent += delta;
+                                        bubble.innerHTML = marked.parse(assistantContent);
+                                        bubble.querySelectorAll('pre code').forEach(block => {
+                                            hljs.highlightElement(block);
+                                        });
+                                        scrollChatToBottom();
+                                    }
+                                } catch (e) {
+                                    // ignore
+                                }
+                            }
+                        }
+                    }
+
+                    // 如果从未收到任何内容（极少情况），保留“思考中”然后改为空？
+                    if (firstToken && !assistantContent) {
+                        bubble.innerHTML = '<span style="color:#aaa;">（无响应内容）</span>';
+                    } else {
+                        // 最终渲染
+                        bubble.innerHTML = marked.parse(assistantContent);
+                        bubble.querySelectorAll('pre code').forEach(block => {
+                            hljs.highlightElement(block);
+                        });
+                    }
+
+                    messages.push({ role: 'assistant', content: assistantContent });
+                    turnCount++;
+
+                    // 更新计费
+                    if (usage) {
+                        const promptTokens = usage.prompt_tokens || 0;
+                        const completionTokens = usage.completion_tokens || 0;
+                        const totalTokens = usage.total_tokens || 0;
+                        let cacheHit = 0;
+                        if (usage.prompt_tokens_details && usage.prompt_tokens_details.cached_tokens !== undefined) {
+                            cacheHit = usage.prompt_tokens_details.cached_tokens;
+                        }
+                        const inputCost = (promptTokens - cacheHit) * PRICE_INPUT / 1e6;
+                        const cacheCost = cacheHit * PRICE_CACHE_HIT / 1e6;
+                        const outputCost = completionTokens * PRICE_OUTPUT / 1e6;
+                        const cost = inputCost + cacheCost + outputCost;
+
+                        totalInputTokens += promptTokens;
+                        totalOutputTokens += completionTokens;
+                        totalCacheHit += cacheHit;
+                        totalCostAccum += cost;
+
+                        inputTokensEl.textContent = promptTokens;
+                        outputTokensEl.textContent = completionTokens;
+                        totalTokensEl.textContent = totalTokens;
+                        detailCost.textContent = cost.toFixed(6) + ' 元';
+                        if (cacheHit > 0) {
+                            cacheRow.style.display = 'flex';
+                            cacheHitTokens.textContent = cacheHit;
+                        } else {
+                            cacheRow.style.display = 'none';
+                        }
+                        updateBillingUI();
+                    } else {
+                        inputTokensEl.textContent = '?';
+                        outputTokensEl.textContent = '?';
+                        totalTokensEl.textContent = '?';
+                        detailCost.textContent = '不可用';
+                        cacheRow.style.display = 'none';
+                        totalCostAccum = 0;
+                        updateBillingUI();
+                    }
+
+                    turnCounter.textContent = `剩余对话次数：${MAX_TURNS - turnCount}`;
+                    if (turnCount >= MAX_TURNS) {
+                        showToast('已达到最大对话轮数，如需继续请重置会话', 'info');
+                    }
+
+                    chatInput.value = '';
+
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        console.log('请求已取消');
+                    } else {
+                        console.error('分析失败:', err);
+                        showToast('分析失败: ' + err.message, 'error');
+                        const last = chatMessages.lastElementChild;
+                        if (last && last.dataset.role === 'assistant' && !last.dataset.filled) {
+                            last.remove();
+                        }
+                        if (!isFirst) {
+                            messages.pop();
+                        } else {
+                            messages = [];
+                        }
+                    }
+                } finally {
+                    isAnalyzing = false;
+                    analyzeBtn.classList.remove('loading');
+                    analyzeBtn.disabled = false;
+                    setInputEnabled(true);
+                    abortController = null;
+                    updateAnalyzeBtn();
+                    scrollChatToBottom();
+                }
+            }
+
+            // ---- 辅助 UI ----
+            function appendMessage(role, content, isStreaming = false) {
+                const div = document.createElement('div');
+                div.className = `chat-message ${role}`;
+                div.dataset.role = role;
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.textContent = role === 'user' ? '🧊' : '🤖';
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                if (role === 'assistant' && content && !isStreaming) {
+                    bubble.innerHTML = marked.parse(content);
+                    bubble.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+                } else {
+                    bubble.textContent = content;
+                }
+                div.appendChild(avatar);
+                div.appendChild(bubble);
+                chatMessages.appendChild(div);
+                if (!isStreaming) {
+                    div.dataset.filled = 'true';
+                } else {
+                    div.dataset.filled = 'false';
+                }
+                scrollChatToBottom();
+                return div;
+            }
+
+            function scrollChatToBottom() {
+                const container = chatMessages.parentElement;
+                container.scrollTop = container.scrollHeight;
+            }
+
+            function setInputEnabled(enabled) {
+                chatInput.disabled = !enabled;
+                sendBtn.disabled = !enabled;
+                if (enabled) chatInput.focus();
+            }
+
+            function updateBillingUI() {
+                totalCostDisplay.textContent = totalCostAccum.toFixed(6);
+            }
+
+            // ---- 费用按钮折叠 ----
+            let costDetailOpen = false;
+            costToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                costDetailOpen = !costDetailOpen;
+                costPanel.classList.toggle('open', costDetailOpen);
+            });
+
+            // ---- 事件绑定 ----
+            analyzeBtn.addEventListener('click', () => {
+                if (messages.length === 0) {
+                    sendMessage('', true);
+                } else {
+                    showToast('已有进行中的对话，请使用下方输入框继续提问', 'info');
+                }
+            });
+
+            sendBtn.addEventListener('click', () => {
+                const text = chatInput.value.trim();
+                if (text && !isAnalyzing && turnCount < MAX_TURNS) {
+                    sendMessage(text, false);
+                }
+            });
+
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendBtn.click();
+                }
+            });
+
+            // ---- 初始化 ----
+            loadConfig();
+            updateAnalyzeBtn();
+
+            const origSave = saveConfig;
+            saveConfig = function () {
+                origSave();
+                updateAnalyzeBtn();
+            };
+            saveConfigBtn.addEventListener('click', saveConfig);
+
+            [apiBase, apiKey, modelName].forEach(el => el.addEventListener('input', updateAnalyzeBtn));
+
+            console.log('🔧 FCL 崩溃日志分析工具已加载 (支持Markdown, 消耗面板已整合)');
+        })();
+    </script>
+</body>
+
+</html>

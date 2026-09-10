@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冰凌の小栈</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- AOS Animation -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+
+    <link rel="stylesheet" href="/lib/all.css">
+
+    <style>
+        /* Hero 区域 */
+        .hero {
+            text-align: center;
+            padding: 60px 0 40px;
+            position: relative;
+        }
+
+        .hero-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--white-card);
+            box-shadow: var(--shadow-card);
+            margin-bottom: 18px;
+            transition: var(--transition);
+            background: linear-gradient(135deg, #FADADD, #E8D5F5);
+        }
+
+        .hero-avatar:hover {
+            transform: scale(1.06);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .hero h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .hero .subtitle {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+        .hero .typed-wrapper {
+            min-height: 28px;
+            font-size: 0.95rem;
+            color: var(--sakura-deep);
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .hero-social {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .hero-social a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            background: var(--white-card);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border: 1px solid rgba(230, 200, 210, 0.4);
+            box-shadow: var(--shadow-soft);
+            transition: var(--transition);
+        }
+
+        .hero-social a:hover {
+            color: var(--sakura-deep);
+            background: var(--white-card-hover);
+            box-shadow: var(--shadow-card);
+            transform: translateY(-2px);
+        }
+
+        /* Section 通用 */
+        .section {
+            padding: 30px 0 50px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .section-desc {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.92rem;
+            margin-bottom: 32px;
+        }
+
+        /* 卡片通用 */
+        .card {
+            background: var(--white-card);
+            backdrop-filter: blur(14px) saturate(1.3);
+            -webkit-backdrop-filter: blur(14px) saturate(1.3);
+            border: 1px solid rgba(240, 215, 225, 0.5);
+            border-radius: var(--radius-lg);
+            padding: 26px 28px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+            background: var(--white-card-hover);
+        }
+
+        /* 博客卡片网格 */
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 24px;
+        }
+
+        .blog-card .blog-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .blog-card .blog-tag {
+            display: inline-block;
+            background: var(--lavender);
+            color: #6B5B7B;
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .blog-card h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .blog-card h3 a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        .blog-card h3 a:hover {
+            color: var(--sakura-deep);
+        }
+
+        .blog-card .blog-meta {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .blog-card .blog-excerpt {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .blog-loading {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            grid-column: 1 / -1;
+        }
+
+        .blog-more {
+            text-align: center;
+            margin-top: 28px;
+        }
+
+        /* 工具卡片网格 */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin: 0 10px;
+            /* 新增：左右各4px间距 */
+        }
+
+        .tool-card {
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .tool-card .tool-icon {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            display: block;
+            transition: var(--transition);
+        }
+
+        .tool-card:hover .tool-icon {
+            transform: scale(1.15);
+        }
+
+        .tool-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .tool-card p {
+            font-size: 0.82rem;
+            color: var(--text-light);
+        }
+
+        /* 工具面板（隐藏） */
+        .tool-panel {
+            display: none;
+            margin-top: 28px;
+            animation: fadeSlideIn 0.4s ease;
+        }
+
+        .tool-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tool-panel .card {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .tool-panel textarea,
+        .tool-panel input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #F0E0E8;
+            border-radius: var(--radius-md);
+            font-family: 'Quicksand', 'Noto Sans SC', monospace;
+            font-size: 0.9rem;
+            background: rgba(255, 250, 252, 0.8);
+            transition: var(--transition);
+            resize: vertical;
+            color: var(--text-primary);
+        }
+
+        .tool-panel textarea:focus,
+        .tool-panel input:focus {
+            outline: none;
+            border-color: var(--sakura-mid);
+            box-shadow: 0 0 0 4px rgba(244, 184, 193, 0.15);
+        }
+
+        .tool-panel textarea {
+            min-height: 180px;
+        }
+
+        .tool-output {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(248, 240, 245, 0.6);
+            border-radius: var(--radius-md);
+            font-family: 'Quicksand', 'Noto Sans SC', monospace;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(230, 200, 210, 0.3);
+        }
+
+        .tool-panel label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .tool-panel .form-group {
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+
+            .hero {
+                padding: 40px 0 24px;
+            }
+
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tool-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .section {
+                padding: 20px 0 36px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tool-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-social a {
+                padding: 8px 14px;
+                font-size: 0.82rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-decoration bg-circle-1"></div>
+    <div class="bg-decoration bg-circle-2"></div>
+    <div class="bg-decoration bg-circle-3"></div>
+    <div class="sakura-container" id="sakuraContainer"></div>
+
+    <nav class="navbar" data-aos="fade-down" data-aos-duration="600">
+        <div class="navbar-inner">
+            <a href="#" class="nav-brand">
+                <span class="brand-icon">❄️</span>冰凌呀 · 小栈
+            </a>
+            <button class="hamburger" id="hamburgerBtn" aria-label="菜单">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#" class="active"><i class="fas fa-home"></i> 首页</a></li>
+                <li><a href="/blog"><i class="fas fa-feather-alt"></i> 博客</a></li>
+                <li><a href="/tools"><i class="fas fa-wand-magic-sparkles"></i> 工具</a></li>
+                <li><a href="https://github.com/Ice-rink" target="_blank" rel="noopener"><i class="fab fa-github"></i>
+                        GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero container" id="home" data-aos="fade-up" data-aos-duration="700">
+            <img class="hero-avatar" src="/asses/Ice-rink.jpg" alt="冰凌呀的头像" loading="eager"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="hero-avatar"
+                style="display:none; width:110px; height:110px; margin:0 auto 18px; align-items:center; justify-content:center; font-size:2.8rem;">
+                ❄️
+            </div>
+            <h1>冰凌呀 · Ice_rink</h1>
+            <p class="subtitle">写点代码，记录生活，分享温柔的科技日常 ✨</p>
+            <div class="typed-wrapper">
+                <span id="typedOutput"></span>
+            </div>
+            <div class="hero-social">
+                <a href="https://github.com/Ice-rink" target="_blank" rel="noopener">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <a href="/tools/">
+                    <i class="fas fa-wrench"></i> 工具
+                </a>
+                <a href="/blog">
+                    <i class="fas fa-feather-alt"></i> 博客
+                </a>
+            </div>
+        </section>
+
+        <!-- 工具区域 -->
+        <section class="section container" id="tools" data-aos="fade-up" data-aos-duration="700">
+            <h2 class="section-title">🛠️ 实用小工具</h2>
+            <p class="section-desc">一些轻量级在线工具，让日常开发更顺手</p>
+            <div class="tool-grid" id="toolGrid"></div>
+            <div class="blog-more">
+                <a href="tools/" class="btn btn-outline">
+                    <i class="fas fa-list"></i> 查看全部工具
+                </a>
+            </div>
+        </section>
+
+        <!-- 博客区域 -->
+        <section class="section container" id="blog" data-aos="fade-up" data-aos-duration="700">
+            <h2 class="section-title">📝 最新博文</h2>
+            <p class="section-desc">用文字记录技术路上的小发现与小确幸</p>
+            <div class="blog-grid" id="blogGrid">
+                <div class="blog-loading" id="blogLoading">
+                    <span style="font-size:1.5rem;">🌸</span>
+                    <p style="margin-top:6px;">正在加载文章...</p>
+                </div>
+            </div>
+            <div class="blog-more">
+                <a href="blog/" class="btn btn-outline">
+                    <i class="fas fa-list"></i> 查看全部文章
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer" data-aos="fade-up" data-aos-duration="700">
+        <p style="margin-top:4px;font-size:0.78rem;">© 2026 Ice_rink · 保持好奇，保持温柔</p>
+        <p>Made with <span class="footer-heart">💗</span> by <a href="https://github.com/Ice-rink" target="_blank"
+                rel="noopener">Ice_rink</a> · 冰凌呀 & <a href="https://deepseek.com/" target="_blank"
+                rel="noopener">DeepSeek</a> v4 Pro</p>
+    </footer>
+
+    <button class="back-to-top" id="backToTop" aria-label="回到顶部" title="回到顶部">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+
+    <script src="/lib/all.js"></script>
+    <script>
+        (function () {
+            AOS.init({ duration: 700, once: true, offset: 60 });
+
+            // ===== Typed.js =====
+            const typed = new Typed('#typedOutput', {
+                strings: [
+                    '「代码是诗，温柔是答案。」',
+                    '「在0和1的世界里，种一朵花。」',
+                    '「Bug会修好，明天会更好 ^_^」',
+                    '「保持好奇，保持温柔。」',
+                ],
+                typeSpeed: 70,
+                backSpeed: 40,
+                backDelay: 2500,
+                startDelay: 600,
+                loop: true,
+                showCursor: true,
+                cursorChar: '|',
+            });
+
+            // ===== 异步加载最新4篇文章 =====
+            async function loadLatestPosts() {
+                const blogGrid = document.getElementById('blogGrid');
+                const loadingEl = document.getElementById('blogLoading');
+
+                try {
+                    const response = await fetch('/blog/postList.json');
+                    if (!response.ok) throw new Error('加载失败');
+                    const posts = await response.json();
+
+                    // 按日期排序取最新4篇
+                    posts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+                    const latest = posts.slice(0, 4);
+
+                    loadingEl.remove();
+
+                    if (latest.length === 0) {
+                        blogGrid.innerHTML = '<div class="blog-loading"><p>📭 还没有文章~</p></div>';
+                        return;
+                    }
+
+                    blogGrid.innerHTML = latest.map((post, i) => {
+                        const tags = Array.isArray(post.tags) ? post.tags : [];
+                        return `
+                            <div class="card blog-card" data-aos="fade-up" data-aos-duration="600" data-aos-delay="${i * 80}">
+                                <div class="blog-tags">
+                                    ${tags.map(t => `<span class="blog-tag">${t}</span>`).join('')}
+                                </div>
+                                <h3><a href="blog/post.html?id=${post.id}">${post.title || '无标题'}</a></h3>
+                                <div class="blog-meta">
+                                    <span><i class="far fa-calendar-alt"></i> ${post.date || ''}</span>
+                                </div>
+                                <p class="blog-excerpt">${post.excerpt || '(暂无摘要)'}</p>
+                            </div>
+                        `;
+                    }).join('');
+
+                    AOS.refresh();
+                } catch (e) {
+                    loadingEl.innerHTML = '<div class="blog-loading"><p>📭 加载失败，请刷新</p></div>';
+                }
+            }
+
+            loadLatestPosts();
+
+            // ===== 工具数据和面板（保持不变） =====
+            let tools = [];
+
+            async function loadHomeTools() {
+                try {
+                    const res = await fetch('/tools/toolData.json');
+                    const toolData = await res.json();
+                    tools = toolData.slice(0, 5).map(tool => ({
+                        id: tool.id,
+                        icon: tool.icon,
+                        name: tool.name,
+                        desc: tool.desc,
+                        color: getToolColor(tool.id)
+                    }));
+                    renderTools();
+                } catch (e) {
+                    console.error('工具加载失败', e);
+                }
+            }
+            loadHomeTools();
+
+            // 辅助函数：给不同工具分配不同颜色（可选）
+            function getToolColor(id) {
+                const colorMap = {
+                    'json-formatter': '#FADADD',
+                    'regex-tester': '#E8D5F5',
+                    'color-converter': '#D4EAF7',
+                    'timestamp': '#FDE4D0',
+                    'base64': '#D4F0E0',
+                    'word-count': '#FADADD'
+                };
+                return colorMap[id] || '#FADADD';
+            }
+
+            // 渲染工具卡片时，直接使用 <a> 标签包裹
+            function renderTools() {
+                const grid = document.getElementById('toolGrid');
+                if (!grid) return;
+
+                grid.innerHTML = tools.map((tool, i) => `
+                    <a href="tools/tool/${tool.id}.html" class="card tool-card" data-aos="fade-up" data-aos-duration="600" data-aos-delay="${i * 80}" style="border-left: 4px solid ${tool.color}; text-decoration: none;">
+                        <span class="tool-icon">${tool.icon}</span>
+                        <h4>${tool.name}</h4>
+                        <p>${tool.desc}</p>
+                    </a>
+                `).join('');
+
+                AOS.refresh();
+            }
+            renderTools();
+
+            const toolPanel = document.getElementById('toolPanel');
+            let currentTool = null;
+
+            // 可选：保留一个简单的点击记录（不涉及面板）
+            document.getElementById('toolGrid')?.addEventListener('click', (e) => {
+                const card = e.target.closest('.tool-card');
+                if (card && card.tagName !== 'A') {
+                    // 如果卡片不是 <a> 标签，则手动跳转
+                    const toolId = card.dataset.tool;
+                    if (toolId) window.location.href = `tools/tool/${toolId}.html`;
+                }
+            });
+
+            function rgbToHsl(r, g, b) {
+                r /= 255;
+                g /= 255;
+                b /= 255;
+                const max = Math.max(r, g, b),
+                    min = Math.min(r, g, b);
+                let h, s, l = (max + min) / 2;
+                if (max === min) {
+                    h = s = 0;
+                } else {
+                    const d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch (max) {
+                        case r:
+                            h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+                            break;
+                        case g:
+                            h = ((b - r) / d + 2) / 6;
+                            break;
+                        case b:
+                            h = ((r - g) / d + 4) / 6;
+                            break;
+                    }
+                }
+                return {
+                    h: Math.round(h * 360),
+                    s: Math.round(s * 100),
+                    l: Math.round(l * 100),
+                };
+            }
+
+            console.log('❄️ 冰凌呀 · 小栈 已就绪 ~');
+            console.log('💗 感谢你的来访，愿你在这里找到一份温柔的技术时光。');
+        })();
+    </script>
+</body>
+
+</html>

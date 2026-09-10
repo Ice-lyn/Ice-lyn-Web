@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 全局禁止 Referrer，实现匿名访问 -->
+    <meta name="referrer" content="no-referrer">
+    <title>冰凌の小栈 | AI 图片生成器</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+
+    <link rel="stylesheet" href="/lib/all.css">
+    <style>
+        /* ========== 工具页专属样式 ========== */
+        .template-header {
+            text-align: center;
+            padding: 40px 0 20px;
+        }
+
+        .template-header h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .template-header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* 返回按钮区域 */
+        .back-bar {
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(230, 200, 210, 0.5);
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .back-btn:hover {
+            color: var(--sakura-deep);
+            background: var(--white-card-hover);
+            transform: translateX(-3px);
+            box-shadow: var(--shadow-card);
+        }
+
+        /* API 来源标识条 */
+        .api-source-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: linear-gradient(135deg, rgba(255, 220, 235, 0.5), rgba(255, 240, 245, 0.5));
+            border: 1px solid rgba(230, 180, 200, 0.5);
+            border-radius: var(--radius-md);
+            padding: 12px 20px;
+            margin-bottom: 24px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            backdrop-filter: blur(6px);
+            text-align: center;
+        }
+
+        .api-source-badge strong {
+            color: var(--sakura-deep);
+            font-weight: 600;
+        }
+
+        .api-source-badge .badge-tag {
+            display: inline-block;
+            background: var(--sakura-pink);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .api-source-badge .privacy-note {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #888;
+            font-size: 0.75rem;
+        }
+
+        .api-source-badge .privacy-note i {
+            color: #4caf84;
+            font-size: 0.7rem;
+        }
+
+        /* 主内容卡片 */
+        .content-card {
+            background: var(--white-card);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(240, 215, 225, 0.5);
+            border-radius: var(--radius-lg);
+            padding: 36px 32px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition);
+            margin-bottom: 40px;
+        }
+
+        .content-card:hover {
+            box-shadow: var(--shadow-hover);
+            background: var(--white-card-hover);
+        }
+
+        /* 表单区域 */
+        .form-section {
+            margin-bottom: 28px;
+        }
+
+        .form-section label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .form-section label i {
+            color: var(--sakura-deep);
+            margin-right: 4px;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Prompt 输入框 */
+        .prompt-input-wrap {
+            position: relative;
+        }
+
+        .prompt-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 14px 16px;
+            padding-right: 50px;
+            border: 2px solid rgba(220, 190, 200, 0.5);
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            font-family: 'Noto Sans SC', 'Quicksand', sans-serif;
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            resize: vertical;
+            transition: var(--transition);
+            line-height: 1.6;
+        }
+
+        .prompt-textarea:focus {
+            outline: none;
+            border-color: var(--sakura-mid);
+            box-shadow: 0 0 0 4px rgba(245, 175, 200, 0.12);
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .prompt-textarea::placeholder {
+            color: #c5b8bf;
+            font-style: italic;
+        }
+
+        .prompt-char-count {
+            position: absolute;
+            bottom: 10px;
+            right: 14px;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            pointer-events: none;
+        }
+
+        /* 预设标签 */
+        .preset-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .preset-tag {
+            display: inline-block;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            border-radius: 20px;
+            background: rgba(255, 235, 240, 0.7);
+            border: 1px solid rgba(230, 190, 205, 0.4);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .preset-tag:hover {
+            background: var(--sakura-light);
+            border-color: var(--sakura-mid);
+            color: var(--sakura-deep);
+            transform: translateY(-1px);
+        }
+
+        .preset-tag:active {
+            transform: scale(0.96);
+        }
+
+        /* 参数网格 */
+        .params-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .param-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .param-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        .param-group input,
+        .param-group select {
+            padding: 10px 14px;
+            border: 2px solid rgba(220, 190, 200, 0.5);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-family: 'Quicksand', 'Noto Sans SC', sans-serif;
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .param-group input:focus,
+        .param-group select:focus {
+            outline: none;
+            border-color: var(--sakura-mid);
+            box-shadow: 0 0 0 3px rgba(245, 175, 200, 0.1);
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .param-group select {
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        /* 尺寸预设按钮 */
+        .size-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .size-preset-btn {
+            padding: 6px 12px;
+            font-size: 0.73rem;
+            border-radius: 16px;
+            background: rgba(255, 240, 245, 0.6);
+            border: 1px solid rgba(220, 190, 200, 0.4);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+            white-space: nowrap;
+            font-family: 'Quicksand', 'Noto Sans SC', sans-serif;
+        }
+
+        .size-preset-btn:hover {
+            background: var(--sakura-light);
+            border-color: var(--sakura-mid);
+            color: var(--sakura-deep);
+        }
+
+        .size-preset-btn.active {
+            background: var(--sakura-pink);
+            border-color: var(--sakura-deep);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(230, 140, 170, 0.3);
+        }
+
+        /* 生成按钮 */
+        .generate-btn-wrap {
+            text-align: center;
+            margin: 28px 0 20px;
+        }
+
+        .generate-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 40px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            font-family: 'Quicksand', 'Noto Sans SC', sans-serif;
+            color: #fff;
+            background: linear-gradient(135deg, #e8a0b4, #d4788f);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 6px 20px rgba(210, 120, 145, 0.35);
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(210, 120, 145, 0.45);
+            background: linear-gradient(135deg, #eaa8ba, #d88595);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 14px rgba(210, 120, 145, 0.3);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 14px rgba(210, 120, 145, 0.2);
+            background: linear-gradient(135deg, #d4a0ae, #c08a95);
+        }
+
+        .generate-btn .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255, 255, 255, 0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .generate-btn.loading .spinner {
+            display: inline-block;
+        }
+
+        .generate-btn.loading .btn-icon {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 图片展示区域 */
+        .image-result-area {
+            margin-top: 24px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: var(--transition);
+            min-height: 120px;
+            position: relative;
+        }
+
+        /* 占位状态 */
+        .image-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            border: 2.5px dashed rgba(210, 180, 195, 0.5);
+            border-radius: var(--radius-md);
+            color: #c5b8bf;
+            transition: var(--transition);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .image-placeholder i {
+            font-size: 3.5rem;
+            margin-bottom: 14px;
+            opacity: 0.5;
+        }
+
+        .image-placeholder p {
+            font-size: 0.9rem;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* 加载状态 */
+        .image-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            border: 2.5px dashed rgba(210, 180, 195, 0.5);
+            border-radius: var(--radius-md);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .image-loading .loading-dots {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .image-loading .loading-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--sakura-pink);
+            animation: dotPulse 1.4s ease-in-out infinite;
+        }
+
+        .image-loading .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .image-loading .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes dotPulse {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.6);
+                opacity: 0.4;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .image-loading p {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        /* 图片展示 */
+        .image-display {
+            position: relative;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.03);
+            text-align: center;
+        }
+
+        .image-display img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            border-radius: var(--radius-md);
+            transition: opacity 0.5s ease;
+            cursor: zoom-in;
+        }
+
+        .image-display img.loading-img {
+            opacity: 0.3;
+            filter: blur(10px);
+        }
+
+        .image-display img.loaded {
+            opacity: 1;
+            filter: blur(0);
+        }
+
+        /* 图片操作栏 */
+        .image-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(220, 195, 205, 0.3);
+        }
+
+        .image-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            font-family: 'Quicksand', 'Noto Sans SC', sans-serif;
+            border-radius: 25px;
+            border: 1.5px solid rgba(210, 180, 195, 0.5);
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(4px);
+            white-space: nowrap;
+        }
+
+        .image-action-btn:hover {
+            background: var(--sakura-light);
+            border-color: var(--sakura-mid);
+            color: var(--sakura-deep);
+            transform: translateY(-1px);
+        }
+
+        .image-action-btn:active {
+            transform: scale(0.96);
+        }
+
+        .image-action-btn.copy-success {
+            background: #e8f5e9;
+            border-color: #4caf84;
+            color: #2e7d52;
+            transition: all 0.3s ease;
+        }
+
+        /* 图片信息 */
+        .image-info {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .image-info span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 240, 245, 0.5);
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        /* 错误状态 */
+        .image-error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            border: 2px solid rgba(220, 150, 150, 0.5);
+            border-radius: var(--radius-md);
+            text-align: center;
+            background: rgba(255, 240, 240, 0.4);
+            color: #b86060;
+        }
+
+        .image-error i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .image-error p {
+            margin: 0;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .image-error .retry-hint {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .content-card {
+                padding: 24px 18px;
+            }
+
+            .params-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .generate-btn {
+                padding: 12px 30px;
+                font-size: 0.95rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .image-actions {
+                gap: 6px;
+            }
+
+            .image-action-btn {
+                padding: 8px 14px;
+                font-size: 0.75rem;
+                gap: 4px;
+            }
+
+            .api-source-badge {
+                font-size: 0.75rem;
+                padding: 10px 14px;
+                gap: 6px;
+            }
+
+            .size-presets {
+                gap: 4px;
+            }
+
+            .size-preset-btn {
+                padding: 5px 10px;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .params-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .image-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .image-action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 背景装饰 -->
+    <div class="bg-decoration bg-circle-1"></div>
+    <div class="bg-decoration bg-circle-2"></div>
+    <div class="bg-decoration bg-circle-3"></div>
+    <div class="sakura-container" id="sakuraContainer"></div>
+
+    <main class="container">
+        <!-- 返回按钮栏 -->
+        <div class="back-bar" data-aos="fade-up">
+            <a href="/tools/" class="back-btn">
+                <i class="fas fa-arrow-left"></i> 返回工具列表
+            </a>
+        </div>
+
+        <!-- 页面头部 -->
+        <div class="template-header" data-aos="fade-up">
+            <h1>🎨 AI 图片生成器</h1>
+            <p>输入描述词，AI 为你创作独一无二的图像</p>
+        </div>
+
+        <!-- API 来源标识 -->
+        <div class="api-source-badge" data-aos="fade-up" data-aos-delay="100">
+            <span class="badge-tag">API</span>
+            <span>图片生成服务由 <strong>Pollinations.ai</strong> 提供</span>
+            <span class="privacy-note">
+                <i class="fas fa-shield-alt"></i> 匿名请求 · 无 Referrer
+            </span>
+        </div>
+
+        <!-- 主要内容卡片 -->
+        <div class="content-card" data-aos="fade-up" data-aos-duration="600">
+            <!-- Prompt 输入 -->
+            <div class="form-section">
+                <label for="promptInput">
+                    <i class="fas fa-pen-fancy"></i> 描述词 (Prompt)
+                </label>
+                <div class="prompt-input-wrap">
+                    <textarea id="promptInput" class="prompt-textarea"
+                        placeholder="例如：A serene Japanese garden with cherry blossoms, soft sunlight, photorealistic..."
+                        maxlength="800"></textarea>
+                    <span class="prompt-char-count" id="charCount">0 / 800</span>
+                </div>
+                <div class="preset-tags" id="presetTags">
+                    <span class="preset-tag"
+                        data-prompt="A cute cat wearing a wizard hat, magical glowing aura, fantasy art style">🐱
+                        魔法猫咪</span>
+                    <span class="preset-tag"
+                        data-prompt="Cyberpunk city street at night, neon lights, rain, highly detailed, 4k">🌃
+                        赛博朋克</span>
+                    <span class="preset-tag"
+                        data-prompt="Peaceful mountain lake at sunrise, misty, photorealistic landscape">🏔️ 山湖日出</span>
+                    <span class="preset-tag"
+                        data-prompt="Delicate watercolor flowers, soft pastel colors, elegant botanical illustration">🌸
+                        水彩花卉</span>
+                    <span class="preset-tag"
+                        data-prompt="Futuristic spaceship orbiting a colorful nebula, cinematic lighting, sci-fi">🚀
+                        太空飞船</span>
+                    <span class="preset-tag"
+                        data-prompt="Cute anime girl with long flowing hair, cherry blossoms, studio ghibli style">✨
+                        动漫少女</span>
+                </div>
+            </div>
+
+            <!-- 参数设置 -->
+            <div class="form-section">
+                <label><i class="fas fa-sliders-h"></i> 参数设置</label>
+                <div class="params-grid">
+                    <!-- 宽度 -->
+                    <div class="param-group">
+                        <label for="widthInput">宽度 (Width)</label>
+                        <div class="size-presets" data-target="widthInput">
+                            <button class="size-preset-btn" data-value="512">512</button>
+                            <button class="size-preset-btn" data-value="768">768</button>
+                            <button class="size-preset-btn active" data-value="1024">1024</button>
+                            <button class="size-preset-btn" data-value="1280">1280</button>
+                            <button class="size-preset-btn" data-value="1920">1920</button>
+                        </div>
+                        <input type="number" id="widthInput" value="1024" min="64" max="4096" step="64"
+                            placeholder="宽度">
+                    </div>
+                    <!-- 高度 -->
+                    <div class="param-group">
+                        <label for="heightInput">高度 (Height)</label>
+                        <div class="size-presets" data-target="heightInput">
+                            <button class="size-preset-btn" data-value="512">512</button>
+                            <button class="size-preset-btn" data-value="768">768</button>
+                            <button class="size-preset-btn active" data-value="1024">1024</button>
+                            <button class="size-preset-btn" data-value="1280">1280</button>
+                            <button class="size-preset-btn" data-value="1920">1920</button>
+                        </div>
+                        <input type="number" id="heightInput" value="1024" min="64" max="4096" step="64"
+                            placeholder="高度">
+                    </div>
+                    <!-- 模型 -->
+                    <div class="param-group">
+                        <label for="modelInput">模型 (Model)</label>
+                        <input type="text" id="modelInput" list="modelList" value="flux" placeholder="模型名称"
+                            autocomplete="off">
+                        <datalist id="modelList">
+                            <option value="flux">
+                            <option value="turbo">
+                            <option value="flux-realism">
+                            <option value="flux-anime">
+                            <option value="dreamshaper">
+                        </datalist>
+                    </div>
+                    <!-- 种子值 -->
+                    <div class="param-group">
+                        <label for="seedInput">
+                            种子值 (Seed) <span style="font-weight:400;color:#999;font-size:0.7rem;">留空=随机</span>
+                        </label>
+                        <div style="display:flex;gap:6px;">
+                            <input type="number" id="seedInput" placeholder="留空随机" min="0" max="999999999"
+                                style="flex:1;">
+                            <button type="button" id="randomSeedBtn" title="随机种子" style="
+                                        padding:10px 14px;
+                                        border:2px solid rgba(220,190,200,0.5);
+                                        border-radius:var(--radius-sm);
+                                        background:rgba(255,255,255,0.6);
+                                        cursor:pointer;
+                                        color:var(--text-secondary);
+                                        transition:var(--transition);
+                                        font-size:0.9rem;
+                                    "
+                                onmouseover="this.style.borderColor='var(--sakura-mid)';this.style.color='var(--sakura-deep)';"
+                                onmouseout="this.style.borderColor='rgba(220,190,200,0.5)';this.style.color='var(--text-secondary)';">
+                                <i class="fas fa-dice"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 生成按钮 -->
+            <div class="generate-btn-wrap">
+                <button class="generate-btn" id="generateBtn">
+                    <span class="btn-icon">✨</span>
+                    <span class="spinner"></span>
+                    <span class="btn-text">生成图片</span>
+                </button>
+            </div>
+
+            <!-- 图片展示区域 -->
+            <div class="image-result-area" id="imageResultArea">
+                <!-- 初始占位 -->
+                <div class="image-placeholder" id="imagePlaceholder">
+                    <i class="fas fa-image"></i>
+                    <p>输入描述词并点击生成<br>AI 将为你创作图像</p>
+                </div>
+                <!-- 加载状态（隐藏） -->
+                <div class="image-loading" id="imageLoading" style="display:none;">
+                    <div class="loading-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <p>AI 正在创作中，请稍候...</p>
+                </div>
+                <!-- 图片展示（隐藏） -->
+                <div class="image-display" id="imageDisplay" style="display:none;">
+                    <img id="generatedImage" src="" alt="生成的图片" loading="lazy" referrerpolicy="no-referrer"
+                        crossorigin="anonymous">
+                </div>
+                <!-- 错误状态（隐藏） -->
+                <div class="image-error" id="imageError" style="display:none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p id="errorMessage">生成失败，请稍后重试</p>
+                    <p class="retry-hint">请检查网络连接或尝试修改参数后重新生成</p>
+                </div>
+            </div>
+
+            <!-- 图片操作栏（隐藏） -->
+            <div class="image-actions" id="imageActions" style="display:none;">
+                <button class="image-action-btn" id="downloadBtn">
+                    <i class="fas fa-download"></i> 下载图片
+                </button>
+                <button class="image-action-btn" id="copyLinkBtn">
+                    <i class="fas fa-link"></i> 复制链接
+                </button>
+                <button class="image-action-btn" id="openNewTabBtn">
+                    <i class="fas fa-external-link-alt"></i> 新窗口打开
+                </button>
+                <button class="image-action-btn" id="regenerateBtn">
+                    <i class="fas fa-redo-alt"></i> 重新生成
+                </button>
+            </div>
+
+            <!-- 图片信息（隐藏） -->
+            <div class="image-info" id="imageInfo" style="display:none;"></div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer" data-aos="fade-up" data-aos-duration="700">
+        <p style="margin-top:4px;font-size:0.78rem;">© 2026 Ice_rink · 保持好奇，保持温柔</p>
+        <p>Made with <span class="footer-heart">💗</span> by <a href="https://github.com/Ice-rink" target="_blank"
+                rel="noopener">Ice_rink</a> · 冰凌呀 & <a href="https://deepseek.com/" target="_blank"
+                rel="noopener">DeepSeek</a> v4 Pro</p>
+    </footer>
+
+    <!-- 回到顶部按钮 -->
+    <button class="back-to-top" id="backToTop" title="回到顶部">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- 脚本引入 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js">
+    </script>
+    <script src="/lib/all.js"></script>
+
+    <script>
+        (function () {
+            // ============ 初始化 AOS ============
+            AOS.init({ duration: 700, once: true });
+
+            // ============ DOM 元素 ============
+            const promptInput = document.getElementById('promptInput');
+            const charCount = document.getElementById('charCount');
+            const widthInput = document.getElementById('widthInput');
+            const heightInput = document.getElementById('heightInput');
+            const modelInput = document.getElementById('modelInput');
+            const seedInput = document.getElementById('seedInput');
+            const randomSeedBtn = document.getElementById('randomSeedBtn');
+            const generateBtn = document.getElementById('generateBtn');
+            const imageResultArea = document.getElementById('imageResultArea');
+            const imagePlaceholder = document.getElementById('imagePlaceholder');
+            const imageLoading = document.getElementById('imageLoading');
+            const imageDisplay = document.getElementById('imageDisplay');
+            const generatedImage = document.getElementById('generatedImage');
+            const imageError = document.getElementById('imageError');
+            const errorMessage = document.getElementById('errorMessage');
+            const imageActions = document.getElementById('imageActions');
+            const imageInfo = document.getElementById('imageInfo');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+            const openNewTabBtn = document.getElementById('openNewTabBtn');
+            const regenerateBtn = document.getElementById('regenerateBtn');
+
+            // ============ 状态变量 ============
+            let currentBlobUrl = null;
+            let currentApiUrl = null;
+            let currentImageBlob = null;
+            let abortController = null;
+            let lastUsedParams = null;
+
+            // ============ 字符计数 ============
+            promptInput.addEventListener('input', function () {
+                const len = this.value.length;
+                charCount.textContent = len + ' / 800';
+                if (len > 700) {
+                    charCount.style.color = '#e88';
+                } else if (len > 500) {
+                    charCount.style.color = '#daa';
+                } else {
+                    charCount.style.color = '';
+                }
+            });
+
+            // ============ 预设标签点击 ============
+            document.getElementById('presetTags').addEventListener('click', function (e) {
+                const tag = e.target.closest('.preset-tag');
+                if (!tag) return;
+                const prompt = tag.getAttribute('data-prompt');
+                if (prompt) {
+                    promptInput.value = prompt;
+                    promptInput.dispatchEvent(new Event('input'));
+                    promptInput.focus();
+                    // 轻微动画
+                    tag.style.transform = 'scale(0.94)';
+                    setTimeout(() => { tag.style.transform = ''; }, 150);
+                }
+            });
+
+            // ============ 尺寸预设按钮 ============
+            document.querySelectorAll('.size-presets').forEach(function (presetGroup) {
+                const targetId = presetGroup.getAttribute('data-target');
+                const targetInput = document.getElementById(targetId);
+
+                presetGroup.addEventListener('click', function (e) {
+                    const btn = e.target.closest('.size-preset-btn');
+                    if (!btn) return;
+                    const value = btn.getAttribute('data-value');
+                    if (value && targetInput) {
+                        targetInput.value = value;
+                        // 更新 active 状态
+                        presetGroup.querySelectorAll('.size-preset-btn').forEach(
+                            b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    }
+                });
+
+                // 监听手动输入以同步预设按钮状态
+                if (targetInput) {
+                    targetInput.addEventListener('input', function () {
+                        const val = this.value;
+                        let matched = false;
+                        presetGroup.querySelectorAll('.size-preset-btn').forEach(
+                            btn => {
+                                if (btn.getAttribute('data-value') === val) {
+                                    btn.classList.add('active');
+                                    matched = true;
+                                } else {
+                                    btn.classList.remove('active');
+                                }
+                            });
+                        if (!matched) {
+                            presetGroup.querySelectorAll('.size-preset-btn')
+                                .forEach(b => b.classList.remove('active'));
+                        }
+                    });
+                }
+            });
+
+            // ============ 随机种子按钮 ============
+            randomSeedBtn.addEventListener('click', function () {
+                const randomSeed = Math.floor(Math.random() * 999999999);
+                seedInput.value = randomSeed;
+                // 骰子旋转动画
+                this.querySelector('i').style.transform = 'rotate(360deg)';
+                this.querySelector('i').style.transition = 'transform 0.5s ease';
+                setTimeout(() => {
+                    this.querySelector('i').style.transform = 'rotate(0deg)';
+                    this.querySelector('i').style.transition = 'none';
+                }, 500);
+            });
+
+            // ============ 构建 API URL ============
+            function buildApiUrl() {
+                const prompt = promptInput.value.trim();
+                if (!prompt) return null;
+
+                const width = parseInt(widthInput.value) || 1024;
+                const height = parseInt(heightInput.value) || 1024;
+                const model = modelInput.value.trim() || 'flux';
+                const seed = seedInput.value.trim();
+
+                // 限制尺寸范围
+                const clampedWidth = Math.max(64, Math.min(4096, width));
+                const clampedHeight = Math.max(64, Math.min(4096, height));
+
+                let url =
+                    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${clampedWidth}&height=${clampedHeight}&model=${encodeURIComponent(model)}&nologo=true`;
+
+                if (seed !== '' && !isNaN(parseInt(seed))) {
+                    url += `&seed=${parseInt(seed)}`;
+                }
+
+                return url;
+            }
+
+            // ============ 显示/隐藏区域 ============
+            function showState(state) {
+                // 隐藏所有状态
+                imagePlaceholder.style.display = 'none';
+                imageLoading.style.display = 'none';
+                imageDisplay.style.display = 'none';
+                imageError.style.display = 'none';
+                imageActions.style.display = 'none';
+                imageInfo.style.display = 'none';
+
+                switch (state) {
+                    case 'placeholder':
+                        imagePlaceholder.style.display = 'flex';
+                        break;
+                    case 'loading':
+                        imageLoading.style.display = 'flex';
+                        break;
+                    case 'image':
+                        imageDisplay.style.display = 'block';
+                        imageActions.style.display = 'flex';
+                        imageInfo.style.display = 'flex';
+                        break;
+                    case 'error':
+                        imageError.style.display = 'flex';
+                        break;
+                }
+            }
+
+            // ============ 清理旧的 blob URL ============
+            function revokeBlobUrl() {
+                if (currentBlobUrl) {
+                    URL.revokeObjectURL(currentBlobUrl);
+                    currentBlobUrl = null;
+                }
+            }
+
+            // ============ 生成图片 ============
+            async function generateImage() {
+                const apiUrl = buildApiUrl();
+                if (!apiUrl) {
+                    // 提示用户输入 prompt
+                    promptInput.focus();
+                    promptInput.style.borderColor = '#e8a0a0';
+                    setTimeout(() => {
+                        promptInput.style.borderColor = '';
+                    }, 1500);
+                    return;
+                }
+
+                // 取消之前的请求
+                if (abortController) {
+                    abortController.abort();
+                }
+                abortController = new AbortController();
+
+                // 更新 UI
+                showState('loading');
+                generateBtn.classList.add('loading');
+                generateBtn.disabled = true;
+                revokeBlobUrl();
+                currentImageBlob = null;
+                currentApiUrl = apiUrl;
+                generatedImage.src = '';
+                generatedImage.classList.remove('loaded', 'loading-img');
+
+                // 保存参数
+                lastUsedParams = {
+                    prompt: promptInput.value.trim(),
+                    width: parseInt(widthInput.value) || 1024,
+                    height: parseInt(heightInput.value) || 1024,
+                    model: modelInput.value.trim() || 'flux',
+                    seed: seedInput.value.trim() || '随机',
+                };
+
+                try {
+                    // 使用 fetch 获取图片，设置 no-referrer 实现匿名访问
+                    // 这是在前端条件下最接近"无头访问"的方式
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        referrerPolicy: 'no-referrer',
+                        cache: 'no-store',
+                        signal: abortController.signal,
+                        // 注意：浏览器端无法真正做到 Headless 访问
+                        // 如需完全无头访问，建议通过后端代理请求 Pollinations API
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API 响应异常 (${response.status})`);
+                    }
+
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!contentType.startsWith('image/')) {
+                        throw new Error('API 返回的不是图片格式，请检查参数');
+                    }
+
+                    currentImageBlob = await response.blob();
+                    revokeBlobUrl();
+                    currentBlobUrl = URL.createObjectURL(currentImageBlob);
+
+                    // 显示图片，带加载过渡效果
+                    generatedImage.src = currentBlobUrl;
+                    generatedImage.classList.add('loading-img');
+                    generatedImage.onload = function () {
+                        generatedImage.classList.remove('loading-img');
+                        generatedImage.classList.add('loaded');
+                        showState('image');
+                        updateImageInfo();
+                    };
+                    generatedImage.onerror = function () {
+                        throw new Error('图片加载失败');
+                    };
+
+                    // 先显示图片容器
+                    imageDisplay.style.display = 'block';
+                    imageActions.style.display = 'flex';
+                    imageInfo.style.display = 'flex';
+
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        console.log('请求已取消');
+                        return;
+                    }
+                    console.error('生成失败:', err);
+                    errorMessage.textContent = err.message || '生成失败，请稍后重试';
+                    showState('error');
+                    imageActions.style.display = 'none';
+                    imageInfo.style.display = 'none';
+                } finally {
+                    generateBtn.classList.remove('loading');
+                    generateBtn.disabled = false;
+                    abortController = null;
+                }
+            }
+
+            // ============ 更新图片信息 ============
+            function updateImageInfo() {
+                if (!lastUsedParams) return;
+                const p = lastUsedParams;
+                imageInfo.innerHTML = `
+                    <span><i class="fas fa-ruler-combined"></i> ${p.width} × ${p.height}</span>
+                    <span><i class="fas fa-microchip"></i> 模型：${escapeHtml(p.model)}</span>
+                    <span><i class="fas fa-dice-d6"></i> 种子：${p.seed}</span>
+                `;
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // ============ 生成按钮点击 ============
+            generateBtn.addEventListener('click', generateImage);
+
+            // ============ 回车键生成 ============
+            promptInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    generateImage();
+                }
+            });
+
+            // ============ 下载按钮 ============
+            downloadBtn.addEventListener('click', function () {
+                if (!currentBlobUrl || !currentImageBlob) return;
+                const prompt = lastUsedParams ?
+                    lastUsedParams.prompt.substring(0, 30).replace(/[^a-zA-Z0-9\u4e00-\u9fa5\s]/g,
+                        '').trim() :
+                    'image';
+                const filename = `ai-generated-${prompt || 'image'}-${Date.now()}.png`;
+                const a = document.createElement('a');
+                a.href = currentBlobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                // 下载反馈
+                const originalHtml = downloadBtn.innerHTML;
+                downloadBtn.innerHTML = '<i class="fas fa-check"></i> 已下载';
+                downloadBtn.style.background = '#e8f5e9';
+                downloadBtn.style.borderColor = '#4caf84';
+                downloadBtn.style.color = '#2e7d52';
+                setTimeout(() => {
+                    downloadBtn.innerHTML = originalHtml;
+                    downloadBtn.style.background = '';
+                    downloadBtn.style.borderColor = '';
+                    downloadBtn.style.color = '';
+                }, 1500);
+            });
+
+            // ============ 复制链接按钮 ============
+            copyLinkBtn.addEventListener('click', async function () {
+                if (!currentApiUrl) return;
+                try {
+                    await navigator.clipboard.writeText(currentApiUrl);
+                    const originalHtml = copyLinkBtn.innerHTML;
+                    copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    copyLinkBtn.classList.add('copy-success');
+                    setTimeout(() => {
+                        copyLinkBtn.innerHTML = originalHtml;
+                        copyLinkBtn.classList.remove('copy-success');
+                    }, 1800);
+                } catch (err) {
+                    // 降级方案
+                    const textarea = document.createElement('textarea');
+                    textarea.value = currentApiUrl;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    const originalHtml = copyLinkBtn.innerHTML;
+                    copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    copyLinkBtn.classList.add('copy-success');
+                    setTimeout(() => {
+                        copyLinkBtn.innerHTML = originalHtml;
+                        copyLinkBtn.classList.remove('copy-success');
+                    }, 1800);
+                }
+            });
+
+            // ============ 新窗口打开 ============
+            openNewTabBtn.addEventListener('click', function () {
+                if (currentApiUrl) {
+                    window.open(currentApiUrl, '_blank', 'noopener,noreferrer');
+                }
+            });
+
+            // ============ 重新生成按钮 ============
+            regenerateBtn.addEventListener('click', function () {
+                // 滚动到顶部
+                window.scrollTo({ top: generateBtn.offsetTop - 100, behavior: 'smooth' });
+                generateImage();
+            });
+
+            // ============ 返回按钮逻辑 ============
+            const backBtn = document.querySelector('.back-btn');
+            if (backBtn) {
+                backBtn.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href === '#') {
+                        e.preventDefault();
+                        window.history.back();
+                    }
+                });
+            }
+
+            // ============ 页面卸载时清理 ============
+            window.addEventListener('beforeunload', function () {
+                revokeBlobUrl();
+                if (abortController) {
+                    abortController.abort();
+                }
+            });
+
+            // ============ 初始状态 ============
+            showState('placeholder');
+
+            console.log('🎨 AI 图片生成器已就绪');
+            console.log('📡 API: Pollinations.ai');
+            console.log('🔒 请求策略: no-referrer (匿名访问)');
+            console.log('💡 提示: 如需完全无头访问，建议配置后端代理');
+            console.log('   fetch 已使用 referrerPolicy: "no-referrer"');
+            console.log('   meta 标签已设置全局 no-referrer');
+        })();
+    </script>
+</body>
+
+</html>
