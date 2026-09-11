@@ -800,7 +800,7 @@
 
                         try {
                             // 添加访问量（自动 +1）
-                            const addRes = await fetch(`/api/visit?mode=add&key=${key}`);
+                            const addRes = await fetch(`/internal/visit?mode=add&key=${key}`);
                             const addData = await addRes.json();
 
                             if (countEl) {
@@ -840,7 +840,7 @@
                 commentsList.innerHTML = '<div class="comments-loading">💬 加载评论中...</div>';
 
                 try {
-                    const response = await fetch(`/api/comments?postId=${postId}`);
+                    const response = await fetch(`/internal/comments?postId=${postId}`);
                     const data = await response.json();
 
                     if (!data.success) {
@@ -905,7 +905,7 @@
 
             // 提交评论
             async function submitComment(postId, nickname, email, content) {
-                const response = await fetch('/api/comments', {
+                const response = await fetch('/internal/comments', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ postId, nickname, email, content }),

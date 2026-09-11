@@ -599,7 +599,7 @@
 
                 try {
                     const promises = postIds.map(id =>
-                        fetch(`/api/visit?mode=query&key=blog_${id}`)
+                        fetch(`/internal/visit?mode=query&key=blog_${id}`)
                             .then(res => res.json())
                             .catch(() => ({ key: `blog_${id}`, value: 0 }))
                     );
