@@ -4,7 +4,7 @@
 > 这里是我写代码、记生活、分享温柔的地方。
 
 <p align="center">
-  <img src="/asses/Ice-rink.jpg" width="120" style="border-radius: 50%; box-shadow: 0 8px 20px rgba(232,141,155,0.3);" alt="avatar">
+  <img src="/assets/Ice-lyn.jpg" width="120" style="border-radius: 50%; box-shadow: 0 8px 20px rgba(232,141,155,0.3);" alt="avatar">
 </p>
 
 ---
@@ -41,7 +41,7 @@
 
 ```
 
-Ice-rink.online/
+Ice-lyn.online/
 ├── index.html               # 首页（个人介绍 + 最新博文 + 工具卡片）
 ├── blog/                    # 博客模块
 │   ├── index.html           # 博客列表页（支持标签筛选、搜索）
@@ -151,5 +151,5 @@ Ice-rink.online/
 
 <p align="center">
   <i>保持好奇，保持温柔。</i><br>
-  © 2026 Ice_rink · 冰凌呀
+  © 2026 Ice_lyn · 冰凌呀
 </p>
