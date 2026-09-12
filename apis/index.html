@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冰凌の小栈 | API</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+
+    <link rel="stylesheet" href="/lib/all.css">
+    <style>
+        /* 头部 */
+        .page-header {
+            text-align: center;
+            padding: 40px 0 20px;
+        }
+
+        .page-header h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .page-header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* 搜索 + 标签 */
+        .filter-section {
+            margin: 20px 0 30px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--white-card);
+            backdrop-filter: blur(12px);
+            border-radius: 50px;
+            padding: 10px 20px;
+            border: 1px solid rgba(230, 200, 210, 0.5);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 16px;
+        }
+
+        .search-box i {
+            color: var(--text-light);
+            margin-right: 8px;
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            width: 100%;
+            outline: none;
+        }
+
+        .tag-area {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .tag-area .tag-label {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            white-space: nowrap;
+        }
+
+        .tag-btn {
+            background: var(--white-card);
+            border: 1px solid rgba(230, 200, 210, 0.5);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(8px);
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tag-btn:hover {
+            background: rgba(250, 218, 221, 0.35);
+            color: var(--sakura-deep);
+        }
+
+        .tag-btn.selected {
+            background: var(--sakura-pink);
+            color: var(--sakura-deep);
+            border-color: var(--sakura-mid);
+            font-weight: 600;
+            box-shadow: 0 0 0 3px rgba(244, 184, 193, 0.25);
+        }
+
+        .tag-clear-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 6px 10px;
+            border-radius: 50px;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .tag-clear-btn:hover {
+            color: var(--sakura-deep);
+            background: rgba(250, 218, 221, 0.3);
+        }
+
+        .tag-clear-btn.hidden {
+            display: none;
+        }
+
+        .tag-count-badge {
+            background: var(--sakura-deep);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-weight: 700;
+        }
+
+        /* API 网格 */
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .api-card {
+            background: var(--white-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(240, 215, 225, 0.5);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            transition: var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        .api-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+            background: var(--white-card-hover);
+        }
+
+        .api-card .api-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .api-card .api-icon {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        .api-card .api-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .api-card .api-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .api-card .api-endpoint {
+            font-family: 'Quicksand', monospace;
+            font-size: 0.74rem;
+            color: var(--text-light);
+            background: rgba(255, 248, 250, 0.8);
+            border: 1px dashed rgba(220, 190, 200, 0.6);
+            border-radius: var(--radius-sm);
+            padding: 6px 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .api-card .api-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .api-card .api-tag {
+            background: var(--lavender);
+            color: #6B5B7B;
+            padding: 2px 10px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .api-card .api-tag.matched {
+            background: var(--sakura-pink);
+            color: var(--sakura-deep);
+            font-weight: 700;
+        }
+
+        /* 方法徽标 */
+        .method-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 50px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #fff;
+        }
+
+        .method-GET {
+            background: #7FB89A;
+        }
+
+        .method-POST {
+            background: #8FA8D9;
+        }
+
+        .method-PUT {
+            background: #D9B27F;
+        }
+
+        .method-DELETE {
+            background: #D98F8F;
+        }
+
+        .method-other {
+            background: var(--text-light);
+        }
+
+        /* 状态点 */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .status-online {
+            background: #7FB89A;
+            box-shadow: 0 0 0 3px rgba(127, 184, 154, 0.22);
+        }
+
+        .status-testing {
+            background: #E3C07F;
+            box-shadow: 0 0 0 3px rgba(227, 192, 127, 0.22);
+        }
+
+        .status-offline {
+            background: #C99A9A;
+            box-shadow: 0 0 0 3px rgba(201, 154, 154, 0.22);
+        }
+
+        .status-text {
+            font-size: 0.72rem;
+            color: var(--text-light);
+        }
+
+        /* 空状态 */
+        .no-result {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            font-size: 1rem;
+            grid-column: 1/-1;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0 40px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            background: var(--white-card);
+            border: 1px solid rgba(230, 200, 210, 0.5);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(8px);
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .page-btn:hover {
+            background: rgba(250, 218, 221, 0.4);
+            color: var(--sakura-deep);
+        }
+
+        .page-btn.active {
+            background: var(--sakura-pink);
+            color: var(--sakura-deep);
+            border-color: var(--sakura-mid);
+            font-weight: 700;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            padding: 0 8px;
+        }
+
+        /* 测试数据提示条 */
+        .notice-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(253, 228, 208, 0.55);
+            border: 1px dashed rgba(245, 201, 160, 0.9);
+            border-radius: var(--radius-md);
+            padding: 12px 18px;
+            font-size: 0.82rem;
+            color: #A97A4A;
+            margin-bottom: 20px;
+            backdrop-filter: blur(8px);
+        }
+
+        .notice-bar i {
+            font-size: 1rem;
+        }
+
+        @media(max-width:768px) {
+            .api-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-decoration bg-circle-1"></div>
+    <div class="bg-decoration bg-circle-2"></div>
+    <div class="bg-decoration bg-circle-3"></div>
+    <div class="sakura-container" id="sakuraContainer"></div>
+
+    <!-- 顶部导航栏（由 lib/all.js 统一渲染） -->
+    <div id="siteNav"></div>
+
+    <main class="container">
+        <div class="page-header" data-aos="fade-up">
+            <h1>🔌 本站 API</h1>
+            <p>冰凌小栈开放接口集合，欢迎调用 ✨</p>
+        </div>
+
+        <div class="filter-section" data-aos="fade-up">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="搜索 API 名称或描述...">
+            </div>
+            <div class="tag-area" id="tagArea">
+                <span class="tag-label"><i class="fas fa-tags"></i> 筛选：</span>
+            </div>
+        </div>
+
+        <div class="api-grid" id="apiGrid"></div>
+
+        <div class="pagination" id="pagination"></div>
+    </main>
+
+    <!-- 页脚（由 lib/all.js 统一渲染） -->
+    <div id="siteFooter"></div>
+
+    <button class="back-to-top" id="backToTop" title="回到顶部"><i class="fas fa-arrow-up"></i></button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
+    <script src="/lib/all.js"></script>
+    <script>
+        (function () {
+            AOS.init({ duration: 700, once: true });
+
+            // 配置文件路径（后续修改 API 数据只需改这个 JSON 文件）
+            const API_DATA_URL = '/apis/apiData.json';
+            const DETAIL_URL = '/apis/detail.html';
+
+            const STATUS_MAP = {
+                online: { text: '可用', cls: 'status-online' },
+                testing: { text: '测试中', cls: 'status-testing' },
+                offline: { text: '维护中', cls: 'status-offline' }
+            };
+
+            let allApis = [];
+            let selectedTags = new Set();
+            let searchTerm = '';
+            const ITEMS_PER_PAGE = 6;
+            let currentPage = 1;
+
+            // ========== 加载配置 ==========
+            async function loadApis() {
+                try {
+                    const response = await fetch(API_DATA_URL);
+                    if (!response.ok) throw new Error('加载失败');
+                    const json = await response.json();
+                    // 兼容 { apis: [...] } 与直接数组两种格式
+                    allApis = Array.isArray(json) ? json : (json.apis || []);
+                    buildTagButtons();
+                    renderAll();
+                } catch (error) {
+                    document.getElementById('apiGrid').innerHTML =
+                        '<div class="no-result">📡 API 数据加载失败，请检查 ' + API_DATA_URL + '</div>';
+                }
+            }
+
+            // ========== 工具函数 ==========
+            function methodClass(method) {
+                const m = (method || 'GET').toUpperCase();
+                return ['GET', 'POST', 'PUT', 'DELETE'].includes(m) ? 'method-' + m : 'method-other';
+            }
+
+            function statusInfo(status) {
+                return STATUS_MAP[status] || { text: '未知', cls: 'status-offline' };
+            }
+
+            function escapeHtml(str) {
+                return String(str == null ? '' : str)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            // ========== 提取所有标签 ==========
+            function getAllTags() {
+                const counts = {};
+                allApis.forEach(a => {
+                    (a.tags || []).forEach(tag => { counts[tag] = (counts[tag] || 0) + 1; });
+                });
+                return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(x => x[0]);
+            }
+
+            // ========== 构建标签按钮 ==========
+            function buildTagButtons() {
+                const allTags = getAllTags();
+                const area = document.getElementById('tagArea');
+                let html = '<span class="tag-label"></span>';
+                allTags.forEach(tag => {
+                    const sel = selectedTags.has(tag);
+                    html += `<button class="tag-btn${sel ? ' selected' : ''}" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`;
+                });
+                const hasSel = selectedTags.size > 0;
+                html += `<button class="tag-clear-btn${hasSel ? '' : ' hidden'}" id="tagClearBtn">
+                    <i class="fas fa-times-circle"></i> 清除筛选
+                </button>`;
+                if (hasSel) html += `<span class="tag-count-badge">${selectedTags.size}</span>`;
+                area.innerHTML = html;
+
+                area.querySelectorAll('.tag-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const tag = btn.dataset.tag;
+                        selectedTags.has(tag) ? selectedTags.delete(tag) : selectedTags.add(tag);
+                        currentPage = 1;
+                        buildTagButtons();
+                        renderAll();
+                    });
+                });
+                const clearBtn = document.getElementById('tagClearBtn');
+                if (clearBtn) clearBtn.addEventListener('click', () => {
+                    selectedTags.clear();
+                    currentPage = 1;
+                    buildTagButtons();
+                    renderAll();
+                });
+            }
+
+            // ========== 筛选 ==========
+            function filterApis() {
+                return allApis.filter(a => {
+                    const tags = a.tags || [];
+                    if (selectedTags.size > 0 && !tags.some(tag => selectedTags.has(tag))) return false;
+                    if (searchTerm) {
+                        const q = searchTerm.toLowerCase();
+                        const name = (a.name || '').toLowerCase();
+                        const desc = (a.desc || '').toLowerCase();
+                        if (!name.includes(q) && !desc.includes(q)) return false;
+                    }
+                    return true;
+                });
+            }
+
+            // ========== 渲染卡片 ==========
+            function renderApiCards() {
+                const filtered = filterApis();
+                const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                const start = (currentPage - 1) * ITEMS_PER_PAGE;
+                const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
+
+                const grid = document.getElementById('apiGrid');
+                if (pageItems.length === 0) {
+                    grid.innerHTML = '<div class="no-result">✨ 没有找到匹配的 API，试试调整筛选条件吧~</div>';
+                } else {
+                    grid.innerHTML = pageItems.map((a, i) => {
+                        const st = statusInfo(a.status);
+                        const tags = a.tags || [];
+                        return `
+                        <a href="${DETAIL_URL}?id=${encodeURIComponent(a.id)}" class="api-card"
+                           data-aos="fade-up" data-aos-delay="${i * 60}">
+                            <div class="api-head">
+                                <span class="api-icon">${escapeHtml(a.icon || '🔌')}</span>
+                                <span class="api-name">${escapeHtml(a.name)}</span>
+                                <span class="status-dot ${st.cls}" title="${st.text}"></span>
+                            </div>
+                            <span class="api-desc">${escapeHtml(a.desc)}</span>
+                            <span class="api-endpoint">
+                                <span class="method-badge ${methodClass(a.method)}">${escapeHtml(a.method || 'GET')}</span>
+                                ${escapeHtml(a.endpoint || '')}
+                            </span>
+                            <div class="api-tags">
+                                ${tags.map(tag => {
+                                    const m = selectedTags.size > 0 && selectedTags.has(tag);
+                                    return `<span class="api-tag${m ? ' matched' : ''}">${escapeHtml(tag)}</span>`;
+                                }).join('')}
+                            </div>
+                        </a>`;
+                    }).join('');
+                }
+                AOS.refresh();
+                return totalPages;
+            }
+
+            // ========== 渲染分页 ==========
+            function renderPagination(totalPages) {
+                const pag = document.getElementById('pagination');
+                if (totalPages <= 1) { pag.innerHTML = ''; return; }
+
+                let html = `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i></button>`;
+
+                const maxShow = 5;
+                let startP = Math.max(1, currentPage - Math.floor(maxShow / 2));
+                let endP = Math.min(totalPages, startP + maxShow - 1);
+                if (endP - startP < maxShow - 1) startP = Math.max(1, endP - maxShow + 1);
+
+                if (startP > 1) {
+                    html += `<button class="page-btn" data-page="1">1</button>`;
+                    if (startP > 2) html += `<span class="page-info">...</span>`;
+                }
+                for (let p = startP; p <= endP; p++) {
+                    html += `<button class="page-btn${p === currentPage ? ' active' : ''}" data-page="${p}">${p}</button>`;
+                }
+                if (endP < totalPages) {
+                    if (endP < totalPages - 1) html += `<span class="page-info">...</span>`;
+                    html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+                }
+                html += `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i></button>`;
+                html += `<span class="page-info">第 ${currentPage} / ${totalPages} 页</span>`;
+                pag.innerHTML = html;
+
+                pag.querySelectorAll('.page-btn:not([disabled])').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const p = parseInt(btn.dataset.page);
+                        if (p >= 1 && p <= totalPages) {
+                            currentPage = p;
+                            renderAll();
+                            window.scrollTo({ top: document.getElementById('apiGrid').offsetTop - 120, behavior: 'smooth' });
+                        }
+                    });
+                });
+            }
+
+            function renderAll() {
+                const totalPages = renderApiCards();
+                renderPagination(totalPages);
+            }
+
+            // ========== 搜索 ==========
+            document.getElementById('searchInput').addEventListener('input', e => {
+                searchTerm = e.target.value;
+                currentPage = 1;
+                renderAll();
+            });
+
+            // ========== 启动 ==========
+            loadApis();
+        })();
+    </script>
+</body>
+
+</html>
