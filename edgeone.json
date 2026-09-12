@@ -1,12 +1,3 @@
 {
-    "rewrites": [
-        {
-            "source": "/api/visit",
-            "destination": "/edge-functions/api/visit/index.js"
-        },
-        {
-            "source": "/api/comments",
-            "destination": "/edge-functions/api/comments/index.js"
-        }
-    ]
+    "rewrites": []
 }
