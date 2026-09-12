@@ -53,7 +53,7 @@
                     "example": "manual"
                 }
             ],
-            "response": "{\n  \"code\": 200,\n  \"msg\": \"success\",\n  \"data\": {\n    \"city\": \"北京\",\n    \"temp\": 26,\n    \"humidity\": 58,\n    \"wind\": \"东北风 3 级\",\n    \"weather\": \"多云\"\n  }\n}",
+            "response": "* 原数据长啥样返回的就是啥样",
             "examples": [
                 {
                     "label": "cURL",
