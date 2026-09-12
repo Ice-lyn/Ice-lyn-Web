@@ -142,75 +142,8 @@
             background: var(--white-card-hover);
         }
 
-        /* 博客卡片网格 */
-        .blog-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-            gap: 24px;
-        }
-
-        .blog-card .blog-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-
-        .blog-card .blog-tag {
-            display: inline-block;
-            background: var(--lavender);
-            color: #6B5B7B;
-            padding: 3px 12px;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .blog-card h3 {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-
-        .blog-card h3 a {
-            text-decoration: none;
-            color: inherit;
-            transition: var(--transition);
-        }
-
-        .blog-card h3 a:hover {
-            color: var(--sakura-deep);
-        }
-
-        .blog-card .blog-meta {
-            font-size: 0.8rem;
-            color: var(--text-light);
-            margin-bottom: 10px;
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-
-        .blog-card .blog-excerpt {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .blog-loading {
-            text-align: center;
-            padding: 30px;
-            color: var(--text-light);
-            font-size: 0.9rem;
-            grid-column: 1 / -1;
-        }
-
-        .blog-more {
+        /* 区块底部按钮 */
+        .section-more {
             text-align: center;
             margin-top: 28px;
         }
@@ -338,10 +271,6 @@
                 padding: 40px 0 24px;
             }
 
-            .blog-grid {
-                grid-template-columns: 1fr;
-            }
-
             .tool-grid {
                 grid-template-columns: 1fr 1fr;
             }
@@ -394,9 +323,6 @@
                 <a href="/tools/">
                     <i class="fas fa-wrench"></i> 工具
                 </a>
-                <a href="/blog">
-                    <i class="fas fa-feather-alt"></i> 博客
-                </a>
             </div>
         </section>
 
@@ -405,26 +331,9 @@
             <h2 class="section-title">🛠️ 实用小工具</h2>
             <p class="section-desc">一些轻量级在线工具，让日常开发更顺手</p>
             <div class="tool-grid" id="toolGrid"></div>
-            <div class="blog-more">
+            <div class="section-more">
                 <a href="tools/" class="btn btn-outline">
                     <i class="fas fa-list"></i> 查看全部工具
-                </a>
-            </div>
-        </section>
-
-        <!-- 博客区域 -->
-        <section class="section container" id="blog" data-aos="fade-up" data-aos-duration="700">
-            <h2 class="section-title">📝 最新博文</h2>
-            <p class="section-desc">用文字记录技术路上的小发现与小确幸</p>
-            <div class="blog-grid" id="blogGrid">
-                <div class="blog-loading" id="blogLoading">
-                    <span style="font-size:1.5rem;">🌸</span>
-                    <p style="margin-top:6px;">正在加载文章...</p>
-                </div>
-            </div>
-            <div class="blog-more">
-                <a href="blog/" class="btn btn-outline">
-                    <i class="fas fa-list"></i> 查看全部文章
                 </a>
             </div>
         </section>
@@ -461,51 +370,6 @@
                 showCursor: true,
                 cursorChar: '|',
             });
-
-            // ===== 异步加载最新4篇文章 =====
-            async function loadLatestPosts() {
-                const blogGrid = document.getElementById('blogGrid');
-                const loadingEl = document.getElementById('blogLoading');
-
-                try {
-                    const response = await fetch('/blog/postList.json');
-                    if (!response.ok) throw new Error('加载失败');
-                    const posts = await response.json();
-
-                    // 按日期排序取最新4篇
-                    posts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-                    const latest = posts.slice(0, 4);
-
-                    loadingEl.remove();
-
-                    if (latest.length === 0) {
-                        blogGrid.innerHTML = '<div class="blog-loading"><p>📭 还没有文章~</p></div>';
-                        return;
-                    }
-
-                    blogGrid.innerHTML = latest.map((post, i) => {
-                        const tags = Array.isArray(post.tags) ? post.tags : [];
-                        return `
-                            <div class="card blog-card" data-aos="fade-up" data-aos-duration="600" data-aos-delay="${i * 80}">
-                                <div class="blog-tags">
-                                    ${tags.map(t => `<span class="blog-tag">${t}</span>`).join('')}
-                                </div>
-                                <h3><a href="blog/post.html?id=${post.id}">${post.title || '无标题'}</a></h3>
-                                <div class="blog-meta">
-                                    <span><i class="far fa-calendar-alt"></i> ${post.date || ''}</span>
-                                </div>
-                                <p class="blog-excerpt">${post.excerpt || '(暂无摘要)'}</p>
-                            </div>
-                        `;
-                    }).join('');
-
-                    AOS.refresh();
-                } catch (e) {
-                    loadingEl.innerHTML = '<div class="blog-loading"><p>📭 加载失败，请刷新</p></div>';
-                }
-            }
-
-            loadLatestPosts();
 
             // ===== 工具数据和面板（保持不变） =====
             let tools = [];
