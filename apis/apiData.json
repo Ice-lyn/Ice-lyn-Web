@@ -1,58 +1,6 @@
 {
     "apis": [
         {
-            "id": "-001",
-            "name": "示例 · 天气查询",
-            "desc": "根据城市名称查询实时天气信息（测试数据）",
-            "icon": "🌤️",
-            "tags": [
-                "天气",
-                "生活服务",
-                "GET"
-            ],
-            "method": "GET",
-            "endpoint": "https://api.example.com/v1/weather",
-            "status": "online",
-            "author": "Ice_lyn",
-            "version": "1.0.0",
-            "updated": "2026-09-12",
-            "intro": "这是一个用于演示的天气查询接口。传入城市名称，返回该城市的实时天气数据，包括温度、湿度、风力等信息。\n\n> 当前为测试数据，仅用于页面展示效果。",
-            "params": [
-                {
-                    "name": "city",
-                    "type": "string",
-                    "required": true,
-                    "desc": "城市名称，支持中文或拼音",
-                    "example": "北京"
-                },
-                {
-                    "name": "unit",
-                    "type": "string",
-                    "required": false,
-                    "desc": "温度单位，可选 `c`（摄氏度）或 `f`（华氏度）",
-                    "example": "c"
-                }
-            ],
-            "response": "{\n  \"code\": 200,\n  \"msg\": \"success\",\n  \"data\": {\n    \"city\": \"北京\",\n    \"temp\": 26,\n    \"humidity\": 58,\n    \"wind\": \"东北风 3 级\",\n    \"weather\": \"多云\"\n  }\n}",
-            "examples": [
-                {
-                    "label": "cURL",
-                    "lang": "bash",
-                    "code": "curl -X GET \"https://api.example.com/v1/weather?city=北京&unit=c\""
-                },
-                {
-                    "label": "JavaScript",
-                    "lang": "javascript",
-                    "code": "const res = await fetch('https://api.example.com/v1/weather?city=北京&unit=c');\nconst data = await res.json();\nconsole.log(data);"
-                },
-                {
-                    "label": "Python",
-                    "lang": "python",
-                    "code": "import requests\n\nr = requests.get('https://api.example.com/v1/weather', params={'city': '北京', 'unit': 'c'})\nprint(r.json())"
-                }
-            ]
-        },
-        {
             "id": "001",
             "name": "通用请求代理",
             "desc": "转发任意公网 HTTP 请求，响应原样返回，轻松绕过浏览器跨域限制",
@@ -65,11 +13,8 @@
                 "POST"
             ],
             "method": "GET",
-            "endpoint": "/v1/proxy?url=",
+            "endpoint": "/v1/proxy",
             "status": "online",
-            "author": "Ice_lyn",
-            "version": "1.0.0",
-            "updated": "2026-09-12",
             "intro": "把目标地址交给本站边缘节点，由它在服务端发起请求，再把**状态码、响应头、响应体原封不动**地回传给你。\n\n因为请求发生在服务端，所以浏览器同源策略不再生效，可以读取任意开启了公网访问的接口 —— 图片、音频、JSON、文本等二进制数据都能完整透传。\n\n### 指定目标地址的四种方式\n\n| 方式 | 写法 | 说明 |\n|------|------|------|\n| 查询参数 | `/v1/proxy?url=https%3A%2F%2Fapi.example.com%2Fpath` | 最常用，目标地址需 URL 编码 |\n| 请求头 | `X-Proxy-Target: https://api.example.com/path` | 目标地址不进入 URL，更整洁 |\n| 路径后缀 | `/v1/proxy/https://api.example.com/path` | 目标地址里的 `?` 需编码为 `%3F` |\n| JSON 请求体 | `{ \"url\": \"https://api.example.com/path\" }` | POST 场景友好，取出 `url` 后其余字段原样转发 |\n\n> [!TIP]\n> `url` 与 `target` 两个参数名等价，任选其一。\n\n### 请求体如何转发\n\n- `GET` / `HEAD` 不携带请求体。\n- `POST` / `PUT` / `PATCH` / `DELETE` 的请求体会**原样转发**给上游，包括表单、JSON、二进制文件。\n- 若 JSON 请求体里包含 `url` 字段，该字段会被摘出来当作目标地址，**不会**传给上游；其余字段保留。\n\n### 可选控制参数\n\n这些参数只作用于代理本身，不会转发给上游：\n\n- `_method`：覆盖请求方法，例如用 `GET` 发出 `POST`。\n- `_timeout`：超时毫秒数，默认 30000，范围 1000 ~ 120000。\n- `_headers`：追加 / 覆盖转发给上游的请求头，值为 JSON 字符串，如 `{\"X-Token\":\"abc\"}`，传空字符串表示删除该头。\n- `_redirect`：设为 `manual` 时不跟随上游重定向，直接返回 3xx。\n\n### 响应头说明\n\n除上游自身的响应头外，还会额外附上三个便于调试的头：\n\n- `X-Proxy-Target`：实际请求的目标地址。\n- `X-Proxy-Status`：上游返回的状态码。\n- `X-Proxy-Elapsed`：上游耗时（毫秒）。\n\n> [!WARNING]\n> 出于安全考虑，`localhost` 与内网、链路本地、云元数据地址会被拒绝访问，防止被当作 SSRF 跳板；同样也不允许代理本站自身以免死循环。请求体默认上限 10 MB。",
             "params": [
                 {
@@ -137,9 +82,6 @@
         "method": "请求方法：GET / POST / PUT / DELETE 等",
         "endpoint": "接口地址",
         "status": "状态：online（可用）/ testing（测试中）/ offline（维护中）",
-        "author": "提供者",
-        "version": "版本号",
-        "updated": "最后更新时间 YYYY-MM-DD",
         "intro": "详细介绍，支持 Markdown",
         "params": "参数数组：name / type / required / desc / example",
         "response": "响应示例（JSON 字符串）",
